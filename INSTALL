@@ -1,0 +1,9 @@
+Building bfx
+
+See doc/readme-qt.rst for instructions on building bfx QT,
+the intended-for-end-users, nice-graphical-interface, reference
+implementation of bfx.
+
+See doc/build-*.txt for instructions on building bfxd,
+the intended-for-services, no-graphical-interface, reference
+implementation of bfx.
