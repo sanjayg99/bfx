@@ -280,8 +280,8 @@ public:
         )
     enum
     {
-        PUBKEY_ADDRESS = 25, // B, OLD 53 - N Prefix
-        SCRIPT_ADDRESS = 85, // b, OLD 112 - n Prefix
+        PUBKEY_ADDRESS = 75, // X, OLD 53 - N Prefix
+        SCRIPT_ADDRESS = 137, // x, OLD 112 - n Prefix
         PUBKEY_ADDRESS_TEST = 65, // T Prefix
         SCRIPT_ADDRESS_TEST = 127, // t Prefix
     };
