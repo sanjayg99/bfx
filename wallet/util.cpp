@@ -491,11 +491,11 @@ void ParseParameters(int argc, const char* const argv[])
 
     {
         // add default bfx nodes
-        mapArgs.set("-addnode", "bfxdseed2.nebl.io");
+        mapArgs.set("-addnode", "159.89.190.16");
         std::vector<std::string> nodes;
         mapMultiArgs.get("-addnode", nodes);
-        nodes.push_back("bfxdseed1.nebl.io");
-        nodes.push_back("bfxdseed2.nebl.io");
+        nodes.push_back("159.89.190.12");
+        nodes.push_back("159.89.190.16");
         mapMultiArgs.set("-addnode", nodes);
     }
 
