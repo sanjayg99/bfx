@@ -1573,12 +1573,19 @@ bool LoadBlockIndex(bool fAllowNew)
         if (!fAllowNew)
             return false;
 
-        // Genesis block
+        // Genesis block OLD
 
         // block.GetHash() == 7286972be4dbc1463d256049b7471c252e6557e222cab9be73181d359cd28bcc
         // block.hashMerkleRoot == 203fd13214321a12b01c0d8b32c780977cf52e56ae35b7383cd389c73291aee7
         // block.nTime = 1500674579
         // block.nNonce = 8485
+
+        // Genesis block BFX Crypto
+
+        // block.GetHash() == 7dd3e6bcff250d46e47eb324ece577b4919a6ef2c62be26df8211f50318b39ea
+        // block.hashMerkleRoot == 9d9e896bd09c7b9ec7a084d653299993c1924bcf133ea820c213f28009ffcbe3
+        // block.nTime = 1588320000
+        // block.nNonce = 6
 
         const char*  pszTimestamp = "1may2020 - BFX First Net Launches";
         CTransaction txNew;
@@ -1597,7 +1604,7 @@ bool LoadBlockIndex(bool fAllowNew)
         block.nVersion       = 1;
         block.nTime          = 1588320000; // OLD 1500674579
         block.nBits          = bnProofOfWorkLimit.GetCompact();
-        block.nNonce         = !fTestNet ? 0 : 0; // OLD 8485u : 8485u;
+        block.nNonce         = !fTestNet ? 6 : 6; // OLD 8485u : 8485u;
 
         if (true && (block.GetHash() != hashGenesisBlock)) {
 
@@ -1622,7 +1629,7 @@ bool LoadBlockIndex(bool fAllowNew)
         printf("block.nNonce = %u \n", block.nNonce);
 
         assert(block.hashMerkleRoot ==
-               uint256("")); // OLD 0x203fd13214321a12b01c0d8b32c780977cf52e56ae35b7383cd389c73291aee7
+               uint256("0x9d9e896bd09c7b9ec7a084d653299993c1924bcf133ea820c213f28009ffcbe3")); // OLD 0x203fd13214321a12b01c0d8b32c780977cf52e56ae35b7383cd389c73291aee7
         assert(block.GetHash() == (!fTestNet ? hashGenesisBlock : hashGenesisBlockTestNet));
         assert(block.CheckBlock());
 

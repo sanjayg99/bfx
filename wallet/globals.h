@@ -62,9 +62,9 @@ static const unsigned int MIN_PEER_PROTO_VERSION     = 60210; // v2.1+
 static const unsigned int OLD_MIN_PEER_PROTO_VERSION = 60200; // v2.0+
 
 static const uint256
-    hashGenesisBlock("0x7286972be4dbc1463d256049b7471c252e6557e222cab9be73181d359cd28bcc");
+    hashGenesisBlock("0x7dd3e6bcff250d46e47eb324ece577b4919a6ef2c62be26df8211f50318b39ea"); // OLD 0x7286972be4dbc1463d256049b7471c252e6557e222cab9be73181d359cd28bcc
 static const uint256
-    hashGenesisBlockTestNet("0x7286972be4dbc1463d256049b7471c252e6557e222cab9be73181d359cd28bcc");
+    hashGenesisBlockTestNet("0x7dd3e6bcff250d46e47eb324ece577b4919a6ef2c62be26df8211f50318b39ea");
 
 /** No amount larger than this (in satoshi) is valid */
 static const int64_t MAX_MONEY =
