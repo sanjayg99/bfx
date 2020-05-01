@@ -1580,9 +1580,9 @@ bool LoadBlockIndex(bool fAllowNew)
         // block.nTime = 1500674579
         // block.nNonce = 8485
 
-        const char*  pszTimestamp = "21jul2017 - BFX First Net Launches";
+        const char*  pszTimestamp = "1may2020 - BFX First Net Launches";
         CTransaction txNew;
-        txNew.nTime = 1500674579;
+        txNew.nTime = 1588320000; // OLD 1500674579
         txNew.vin.resize(1);
         txNew.vout.resize(1);
         txNew.vin[0].scriptSig = CScript() << 0 << CBigNum(42)
@@ -1595,9 +1595,9 @@ bool LoadBlockIndex(bool fAllowNew)
         block.hashPrevBlock  = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion       = 1;
-        block.nTime          = 1500674579;
+        block.nTime          = 1588320000; // OLD 1500674579
         block.nBits          = bnProofOfWorkLimit.GetCompact();
-        block.nNonce         = !fTestNet ? 8485u : 8485u;
+        block.nNonce         = !fTestNet ? 0 : 0; // OLD 8485u : 8485u;
 
         if (true && (block.GetHash() != hashGenesisBlock)) {
 
@@ -1622,7 +1622,7 @@ bool LoadBlockIndex(bool fAllowNew)
         printf("block.nNonce = %u \n", block.nNonce);
 
         assert(block.hashMerkleRoot ==
-               uint256("0x203fd13214321a12b01c0d8b32c780977cf52e56ae35b7383cd389c73291aee7"));
+               uint256("")); // OLD 0x203fd13214321a12b01c0d8b32c780977cf52e56ae35b7383cd389c73291aee7
         assert(block.GetHash() == (!fTestNet ? hashGenesisBlock : hashGenesisBlockTestNet));
         assert(block.CheckBlock());
 
