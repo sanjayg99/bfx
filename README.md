@@ -7,13 +7,18 @@ https://bfxcrypto/bfx/releases
 Pull Requests Welcome
 
 
+
 # Building BFX
+```
+git clone https://github.com/bfxcrypto/bfx.git && cd bfx
+```
+
 ## Linux (debian-based)
 ### Install the following dependencies
 ```
 sudo apt-get update && sudo apt-get install qt5-default qt5-qmake qtbase5-dev-tools \
 qttools5-dev-tools build-essential libssl-dev libdb++-dev libminiupnpc-dev \
-libqrencode-dev libcurl4-openssl-dev libldap2-dev libidn11-dev librtmp-dev libsodium-dev -y
+libqrencode-dev libcurl4-openssl-dev libldap2-dev libidn11-dev librtmp-dev libsodium-dev python -y
 ```
 
 ### Build OpenSSL, cURL, QREncode, and Boost
