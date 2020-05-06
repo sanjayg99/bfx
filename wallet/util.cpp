@@ -491,11 +491,11 @@ void ParseParameters(int argc, const char* const argv[])
 
     {
         // add default bfx seed nodes
-        mapArgs.set("-addnode", "159.65.167.138");
+        mapArgs.set("-addnode", "157.245.15.154");
         std::vector<std::string> nodes;
         mapMultiArgs.get("-addnode", nodes);
-        nodes.push_back("159.65.182.97");
-        nodes.push_back("159.65.167.138");
+        nodes.push_back("157.245.15.162");
+        nodes.push_back("157.245.15.154");
         mapMultiArgs.set("-addnode", nodes);
     }
 
