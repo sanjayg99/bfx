@@ -1,3 +1,13 @@
+# BFX Specs
+* Algorithm - Scrypt PoS
+* Premine - 120 million
+* Decimals - 8
+* Blocktime - 60 seconds
+* Staking - Min to Max (2-23 days)
+* Staking percent - 12% p.a.
+* P2P Port- 6325
+* RPC Port- 6326
+
 # Open Source Repository for BFX Nodes & Wallets
 More information here: https://bfxworld.com
 
@@ -5,8 +15,6 @@ Alpha Builds for commits that pass testing can be found here:
 https://bfxcrypto/bfx/releases
 
 Pull Requests Welcome
-
-
 
 # Building BFX
 ```
@@ -44,6 +52,12 @@ strip ./bfxd
 ### Build bfx-Qt
 ```
 qmake "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" "OPENSSL_INCLUDE_PATH=$PWD/openssl_build/include/" "OPENSSL_LIB_PATH=$PWD/openssl_build/lib/" "PKG_CONFIG_PATH=$PWD/curl_build/lib/pkgconfig/" bfx-wallet.pro
+make -B -w -j4
+```
+or:
+
+```
+qmake "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" "OPENSSL_INCLUDE_PATH=$PWD/openssl_build/include/" "OPENSSL_LIB_PATH=$PWD/openssl_build/lib/" "PKG_CONFIG_PATH=$PWD/curl_build/lib/pkgconfig/" “QRENCODE_INCLUDE_PATH=$PWD/qrencode_build/include/“ “QRENCODE_LIB_PATH=$PWD/qrencode_build/lib/“ bfx-wallet.pro
 make -B -w -j4
 ```
 
