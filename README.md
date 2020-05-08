@@ -40,6 +40,8 @@ export OPENSSL_INCLUDE_PATH=$PWD/openssl_build/include/
 export OPENSSL_LIB_PATH=$PWD/openssl_build/lib/
 export BOOST_INCLUDE_PATH=$PWD/boost_build/include/
 export BOOST_LIB_PATH=$PWD/boost_build/lib/
+export QRENCODE_INCLUDE_PATH=$PWD/qrencode_build/include/
+export QRENCODE_LIB_PATH=$PWD/qrencode_build/lib/
 ```
 
 ### Build bfxd
@@ -52,12 +54,6 @@ strip ./bfxd
 ### Build bfx-Qt
 ```
 qmake "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" "OPENSSL_INCLUDE_PATH=$PWD/openssl_build/include/" "OPENSSL_LIB_PATH=$PWD/openssl_build/lib/" "PKG_CONFIG_PATH=$PWD/curl_build/lib/pkgconfig/" bfx-wallet.pro
-make -B -w -j4
-```
-or:
-
-```
-qmake "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" "OPENSSL_INCLUDE_PATH=$PWD/openssl_build/include/" "OPENSSL_LIB_PATH=$PWD/openssl_build/lib/" "PKG_CONFIG_PATH=$PWD/curl_build/lib/pkgconfig/" “QRENCODE_INCLUDE_PATH=$PWD/qrencode_build/include/“ “QRENCODE_LIB_PATH=$PWD/qrencode_build/lib/“ bfx-wallet.pro
 make -B -w -j4
 ```
 
