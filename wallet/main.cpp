@@ -56,17 +56,17 @@ CBigNum bnProofOfWorkLimitTestNet(~uint256(0) >> 1);
 CBigNum bnProofOfStakeLimit(~uint256(0) >> 20);
 
 unsigned int nTargetSpacing         = 60;           // Block spacing 60 seconds
-unsigned int nOldTargetSpacing      = 2 * 60;       // Old Block spacing 2 minutes
+unsigned int nOldTargetSpacing      = 60;           // Old Block spacing 60 seconds
 unsigned int nStakeMinAge           = 2 * 24 * 60 * 60; // Minimum stake age 2 days
 unsigned int nOldTestnetStakeMinAge = 60;           // Minimum stake age on testnet before the hard fork
-unsigned int nStakeMaxAge           = 23 * 24 * 60 * 60; // Maximum stake age 7 days
+unsigned int nStakeMaxAge           = 23 * 24 * 60 * 60; // Maximum stake age 23 days
 unsigned int nModifierInterval      = 10 * 60;          // time to elapse before new modifier is computed
 
 // static const int64_t nTargetTimespan = 16 * 60;  // 16 mins
 static const int64_t nTargetTimespan = 2 * 60 * 60; // 2 hours
 
 int nCoinbaseMaturity    = 120; // Coin Base Maturity
-int nOldCoinbaseMaturity = 100;  // Old Coin Base Maturity
+int nOldCoinbaseMaturity = 120;  // Old Coin Base Maturity
 
 uint256 nBestChainTrust   = 0;
 uint256 nBestInvalidTrust = 0;

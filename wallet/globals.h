@@ -25,13 +25,13 @@ extern CBlockIndexSmartPtr pindexGenesisBlock;
 extern bool               fUseFastIndex;
 extern boost::atomic<int> nBestHeight;
 
-static const int LAST_POW_BLOCK = 1000; // 1000 PoW Blocks to kickstart
+static const int LAST_POW_BLOCK = 500; // 500 PoW Blocks to kickstart
 
 static const int64_t COIN = 100000000;
 static const int64_t CENT = 1000000;
 
 /** The maximum allowed size for a serialized block, in bytes (network rule) */
-static const unsigned int MAX_BLOCK_SIZE     = 8000000;
+static const unsigned int MAX_BLOCK_SIZE     = 1000000;
 static const unsigned int OLD_MAX_BLOCK_SIZE = 1000000;
 /** The maximum size for transactions we're willing to relay/mine **/
 static const unsigned int MAX_STANDARD_TX_SIZE = OLD_MAX_BLOCK_SIZE / 5;
