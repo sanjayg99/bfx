@@ -13,11 +13,15 @@ using namespace std;
 
 typedef std::map<int, unsigned int> MapModifierCheckpoints;
 
-// Hard checkpoints of stake modifiers to ensure they are deterministic
+// Hard checkpoints of stake modifiers to ensure they are deterministic - Change ME (block, Modifier checksum) 
 static std::map<int, unsigned int> mapStakeModifierCheckpoints =
+    boost::assign::map_list_of(0, 0xfd11f4e7) // genesis
+    (400, 0x5955dfcf);
+/* OLD
     boost::assign::map_list_of(0, 0xfd11f4e7) // genesis
     (500, 0x3b54b16d)                         // premine
     (1000, 0x7b238954);
+*/
 
 // Hard checkpoints of stake modifiers to ensure they are deterministic (testNet)
 static std::map<int, unsigned int> mapStakeModifierCheckpointsTestNet =
