@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <random>
 
-const std::string NTP1SendTxData::NEBL_TOKEN_ID = "NEBL";
+const std::string NTP1SendTxData::NEBL_TOKEN_ID = "BFX";
 // token id of new non-existent token (placeholder)
 const std::string NTP1SendTxData::TO_ISSUE_TOKEN_ID = "NEW";
 

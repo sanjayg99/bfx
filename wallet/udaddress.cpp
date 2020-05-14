@@ -35,7 +35,7 @@ boost::optional<std::string> GetBFXAddressFromUDAddress(const StringViewT UDDoma
         json_spirit::Value val;
         json_spirit::read_or_throw(udData, val);
         json_spirit::Object addressesObj = NTP1Tools::GetObjectField(val.get_obj(), "addresses");
-        return NTP1Tools::GetStrField(addressesObj, "NEBL");
+        return NTP1Tools::GetStrField(addressesObj, "BFX");
     } catch (const std::exception& ex) {
         printf("Failed to get address from unstoppable domain: %s", ex.what());
         return boost::none;

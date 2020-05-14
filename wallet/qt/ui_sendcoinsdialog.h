@@ -526,24 +526,24 @@ public:
         labelCoinControlAmountText->setText(
             QApplication::translate("SendCoinsDialog", "Amount:", Q_NULLPTR));
         labelCoinControlAmount->setText(
-            QApplication::translate("SendCoinsDialog", "0.00 NEBL", Q_NULLPTR));
+            QApplication::translate("SendCoinsDialog", "0.00 BFX", Q_NULLPTR));
         labelCoinControlPriorityText->setText(
             QApplication::translate("SendCoinsDialog", "Priority:", Q_NULLPTR));
         labelCoinControlPriority->setText(
             QApplication::translate("SendCoinsDialog", "medium", Q_NULLPTR));
         labelCoinControlFeeText->setText(QApplication::translate("SendCoinsDialog", "Fee:", Q_NULLPTR));
-        labelCoinControlFee->setText(QApplication::translate("SendCoinsDialog", "0.00 NEBL", Q_NULLPTR));
+        labelCoinControlFee->setText(QApplication::translate("SendCoinsDialog", "0.00 BFX", Q_NULLPTR));
         labelCoinControlLowOutputText->setText(
             QApplication::translate("SendCoinsDialog", "Low Output:", Q_NULLPTR));
         labelCoinControlLowOutput->setText(QApplication::translate("SendCoinsDialog", "no", Q_NULLPTR));
         labelCoinControlAfterFeeText->setText(
             QApplication::translate("SendCoinsDialog", "After Fee:", Q_NULLPTR));
         labelCoinControlAfterFee->setText(
-            QApplication::translate("SendCoinsDialog", "0.00 NEBL", Q_NULLPTR));
+            QApplication::translate("SendCoinsDialog", "0.00 BFX", Q_NULLPTR));
         labelCoinControlChangeText->setText(
             QApplication::translate("SendCoinsDialog", "Change", Q_NULLPTR));
         labelCoinControlChange->setText(
-            QApplication::translate("SendCoinsDialog", "0.00 NEBL", Q_NULLPTR));
+            QApplication::translate("SendCoinsDialog", "0.00 BFX", Q_NULLPTR));
         checkBoxCoinControlChange->setText(
             QApplication::translate("SendCoinsDialog", "custom change address", Q_NULLPTR));
         labelCoinControlChangeLabel->setText(QString());
@@ -562,7 +562,7 @@ public:
 #endif // QT_NO_TOOLTIP
         clearButton->setText(QApplication::translate("SendCoinsDialog", "Clear &All", Q_NULLPTR));
         label->setText(QApplication::translate("SendCoinsDialog", "Balance:", Q_NULLPTR));
-        labelBalance->setText(QApplication::translate("SendCoinsDialog", "123.456 NEBL", Q_NULLPTR));
+        labelBalance->setText(QApplication::translate("SendCoinsDialog", "123.456 BFX", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
         sendButton->setToolTip(
             QApplication::translate("SendCoinsDialog", "Confirm the send action", Q_NULLPTR));

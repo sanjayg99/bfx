@@ -1550,7 +1550,7 @@ CWallet::AddNTP1TokenInputsToTx(CTransaction& wtxNew, const NTP1SendTxData& ntp1
             return Input.prevout.hash == iti.input.getHash() && Input.prevout.n == iti.input.getIndex();
         });
         if (inputIt == wtxNew.vin.end()) {
-            // if this iti is for issuance, don't add it its input to NEBL inputs
+            // if this iti is for issuance, don't add it its input to BFX inputs
             // otherwise this is not issuance, because issuance doesn't have input
             if (!iti.isNTP1TokenIssuance) {
                 // add the input only if it doesn't exist

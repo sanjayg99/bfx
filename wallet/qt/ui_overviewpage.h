@@ -179,7 +179,7 @@ public:
         font2.setWeight(75);
         spendable_value_label->setFont(font2);
         spendable_value_label->setCursor(QCursor(Qt::IBeamCursor));
-        spendable_value_label->setText(QStringLiteral("0 NEBL"));
+        spendable_value_label->setText(QStringLiteral("0 BFX"));
         spendable_value_label->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse);
 
         balance_layout->addWidget(spendable_value_label, 0, 1);
@@ -194,7 +194,7 @@ public:
         stake_value_label->setObjectName(QStringLiteral("labelStake"));
         stake_value_label->setFont(font2);
         stake_value_label->setCursor(QCursor(Qt::IBeamCursor));
-        stake_value_label->setText(QStringLiteral("0 NEBL"));
+        stake_value_label->setText(QStringLiteral("0 BFX"));
         stake_value_label->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse);
 
         balance_layout->addWidget(stake_value_label, 1, 1);
@@ -209,7 +209,7 @@ public:
         unconfirmed_value_label->setObjectName(QStringLiteral("labelUnconfirmed"));
         unconfirmed_value_label->setFont(font2);
         unconfirmed_value_label->setCursor(QCursor(Qt::IBeamCursor));
-        unconfirmed_value_label->setText(QStringLiteral("0 NEBL"));
+        unconfirmed_value_label->setText(QStringLiteral("0 BFX"));
         unconfirmed_value_label->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse);
 
         balance_layout->addWidget(unconfirmed_value_label, 2, 1);
@@ -223,7 +223,7 @@ public:
         immature_value_label = new QLabel(wallet_contents_frame);
         immature_value_label->setObjectName(QStringLiteral("labelImmature"));
         immature_value_label->setFont(font2);
-        immature_value_label->setText(QStringLiteral("0 NEBL"));
+        immature_value_label->setText(QStringLiteral("0 BFX"));
         immature_value_label->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse);
 
         balance_layout->addWidget(immature_value_label, 3, 1);

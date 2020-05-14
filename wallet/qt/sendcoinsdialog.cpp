@@ -278,7 +278,7 @@ void SendCoinsDialog::on_sendButton_clicked()
         QMessageBox::warning(
             this, tr("Send Coins - NTP1 tokens problem"),
             "Error: One of the addresses chosen as an input for this transaction contains NTP1 tokens. "
-            "You should NOT send NEBL from these addresses or the NTP1 tokens could be permanently "
+            "You should NOT send BFX from these addresses or the NTP1 tokens could be permanently "
             "burned. "
             "This address contains NTP1 tokens: " +
                 sendstatus.address +
@@ -296,7 +296,7 @@ void SendCoinsDialog::on_sendButton_clicked()
             "Error: Unable to check whether your addresses contain NTP1 tokens (for address: " +
                 sendstatus.address +
                 ")\n"
-                "Sending NEBL from an address that contains NTP1 tokens could result in those tokens "
+                "Sending BFX from an address that contains NTP1 tokens could result in those tokens "
                 "being permanently burned. "
                 "Sweep your NTP1 tokens back to an Orion address using the Orion wallet. "
                 "If you would like to proceed with this at your own risk, "
@@ -307,7 +307,7 @@ void SendCoinsDialog::on_sendButton_clicked()
         QMessageBox::warning(this, tr("Send Coins - NTP1 tokens problem"),
                              "Error: Unable to check whether your addresses contain NTP1 tokens "
                              "(Decoding scriptPubKey failed) "
-                             "Sending NEBL from an address that contains NTP1 tokens could result in "
+                             "Sending BFX from an address that contains NTP1 tokens could result in "
                              "those tokens being permanently burned. "
                              "Sweep your NTP1 tokens back to an Orion address using the Orion wallet. "
                              "If you would like to proceed with this at your own risk, "
@@ -318,7 +318,7 @@ void SendCoinsDialog::on_sendButton_clicked()
         QMessageBox::warning(this, tr("Send Coins - NTP1 tokens problem"),
                              "Error: Unable to check whether your addresses contain NTP1 tokens "
                              "(Reference input transaction not found in the wallet) "
-                             "Sending NEBL from an address that contains NTP1 tokens could result in "
+                             "Sending BFX from an address that contains NTP1 tokens could result in "
                              "those tokens being permanently burned. "
                              "Sweep your NTP1 tokens back to an Orion address using the Orion wallet. "
                              "If you would like to proceed with this at your own risk, "
@@ -329,7 +329,7 @@ void SendCoinsDialog::on_sendButton_clicked()
         QMessageBox::warning(this, tr("Send Coins - NTP1 tokens problem"),
                              "Error: Unable to check whether your addresses contain NTP1 tokens (number "
                              "of outputs in the transaction used for input is wrong) "
-                             "Sending NEBL from an address that contains NTP1 tokens could result in "
+                             "Sending BFX from an address that contains NTP1 tokens could result in "
                              "those tokens being permanently burned. "
                              "Sweep your NTP1 tokens back to an Orion address using the Orion wallet. "
                              "If you would like to proceed with this at your own risk, "

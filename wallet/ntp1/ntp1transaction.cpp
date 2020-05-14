@@ -413,7 +413,7 @@ void NTP1Transaction::AmendStdTxWithNTP1(
 
     bool txContainsOpReturn = TxContainsOpReturn(&tx_);
 
-    // if no inputs contain NTP1 AND no OP_RETURN argument exists, then this is a pure NEBL transaction
+    // if no inputs contain NTP1 AND no OP_RETURN argument exists, then this is a pure BFX transaction
     // with no NTP1
     if (inputTokenKinds == 0) {
         return;

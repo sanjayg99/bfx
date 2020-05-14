@@ -47,7 +47,7 @@ void IssueNewNTP1TokenDialog::createWidgets()
     costLabel = new QLabel(this);
     costLabel->setText("Issuing a token will cost " +
                        QString::number(NTP1Transaction::IssuanceFee / COIN) +
-                       " NEBL. NTP1 outputs cannot be used.");
+                       " BFX. NTP1 outputs cannot be used.");
     costLabel->setAlignment(Qt::AlignHCenter);
     paymentSeparator = new QFrame(this);
     paymentSeparator->setFrameShape(QFrame::HLine);
@@ -415,7 +415,7 @@ void IssueNewNTP1TokenDialog::slot_doIssueToken()
         QMessageBox::StandardButton answer = QMessageBox::question(
             this, "Do you want to proceed?",
             "Creating this token will cost " + QString::fromStdString(FormatMoney(nFeeRequired)) +
-                " NEBL. Are you sure you want to proceed? \n\n This is irreversible, "
+                " BFX. Are you sure you want to proceed? \n\n This is irreversible, "
                 "and none of the data chosen for the token can be changed in the "
                 "future.");
 

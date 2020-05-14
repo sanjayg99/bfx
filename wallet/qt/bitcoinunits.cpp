@@ -30,11 +30,11 @@ QString BitcoinUnits::name(int unit)
 {
     switch (unit) {
     case BTC:
-        return QString("NEBL");
+        return QString("BFX");
     case mBTC:
-        return QString("mNEBL");
+        return QString("mBFX");
     case uBTC:
-        return QString::fromUtf8("μNEBL");
+        return QString::fromUtf8("μBFX");
     case NTP1:
         return QString("");
     default:
@@ -46,11 +46,11 @@ QString BitcoinUnits::description(int unit)
 {
     switch (unit) {
     case BTC:
-        return QString("NEBL");
+        return QString("BFX");
     case mBTC:
-        return QString("Milli-NEBL (1 / 1,000)");
+        return QString("Milli-BFX (1 / 1,000)");
     case uBTC:
-        return QString("Micro-NEBL (1 / 1,000,000)");
+        return QString("Micro-BFX (1 / 1,000,000)");
     case NTP1:
         return QString("NTP1");
     default:
