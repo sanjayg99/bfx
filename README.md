@@ -68,9 +68,15 @@ sudo mv mxe /
 export PATH=/mxe/mxe/usr/bin:$PATH
 ```
 
-### Build bfx-Qt
+### Build bfx-Qt 32 bit
 ```
 i686-w64-mingw32.static-qmake-qt5 "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" bfx-wallet.pro
+make -B -w -j4
+```
+
+### Build bfx-Qt 64 bit
+```
+x86_64-w64-mingw32.static-qmake-qt5 "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" bfx-wallet.pro
 make -B -w -j4
 ```
 
