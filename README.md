@@ -74,12 +74,6 @@ i686-w64-mingw32.static-qmake-qt5 "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" bfx-wa
 make -B -w -j4
 ```
 
-### Build bfx-Qt 64 bit
-```
-x86_64-w64-mingw32.static-qmake-qt5 "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" bfx-wallet.pro
-make -B -w -j4
-```
-
 ## macOS
 ### Install the following dependencies (homebrew)
 ```
