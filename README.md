@@ -12,7 +12,7 @@
 More information here: https://bfxworld.com
 
 Alpha Builds for commits that pass testing can be found here:
-https://bfxcrypto/bfx/releases
+https://github.com/bfxcrypto/bfx/releases
 
 Pull Requests Welcome
 
