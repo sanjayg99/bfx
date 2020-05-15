@@ -273,6 +273,16 @@ validatepubkey <bfxpubkey>
 verifymessage <bfxaddress> <signature> <message>
 ```
 
+# QT & bfxd Configuring 
+The configuration file is a list of setting=value pairs, one per line, with optional comments starting with the '#' character. The configuration file is not automatically created; you can create it using your favorite plain-text editor. By default, BFX (or bfxd) will look for a file named 'bfx.conf' in the BFX data directory, but both the data directory and the configuration file path may be changed using the -datadir and -conf command-line arguments.
+```
+*Operating System*      *Default bitcoin datadir*                  *Typical path to configuration file*
+Windows	                %APPDATA%\bfx\	                           C:\Users\username\AppData\Roaming\bfx\bfx.conf
+Linux	                  $HOME/.bfx/	                               /home/username/.bfx/bfx.conf
+Mac OSX	                $HOME/Library/Application Support/bfx/	   /Users/username/Library/Application Support/bfx/bfx.conf
+```
+
+bfx.conf example can be found here: https://github.com/bfxcrypto/bfx/blob/master/doc/bfx.conf
 
 # Responsible Vulnerability Disclosure
 If you believe you've found a security issue in our product or service, we encourage you to notify us. We welcome working with skilled security researchers across the globe to resolve any issues promptly.
