@@ -82,19 +82,19 @@ if (args.test):
     nci.call_with_err_code('tar -xJvf ../wallet/test/data/test_data_testnet.tar.xz -C ../wallet/test/data')
     nci.call_with_err_code('rm ../wallet/test/data/*.tar.xz')
     # run tests
-    nci.call_with_err_code("./wallet/test/bfx-Qt.app/Contents/MacOS/bfx-Qt")
+    nci.call_with_err_code("./wallet/test/BFX-Qt.app/Contents/MacOS/BFX-Qt")
 else:
     nci.call_with_err_code('qmake "QMAKE_CXX=ccache clang++" "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" ../bfx-wallet.pro')
     nci.call_with_err_code("make -j" + str(mp.cpu_count()))
     # build our .dmg
     nci.call_with_err_code('npm install -g appdmg')
     os.chdir("wallet")
-    nci.call_with_err_code('../../contrib/macdeploy/macdeployqtplus ./bfx-Qt.app -add-qt-tr da,de,es,hu,ru,uk,zh_CN,zh_TW -verbose 1 -rpath /usr/local/opt/qt/lib')
-    nci.call_with_err_code('appdmg ../../contrib/macdeploy/appdmg.json ./bfx-Qt.dmg')
+    nci.call_with_err_code('../../contrib/macdeploy/macdeployqtplus ./BFX-Qt.app -add-qt-tr da,de,es,hu,ru,uk,zh_CN,zh_TW -verbose 1 -rpath /usr/local/opt/qt/lib')
+    nci.call_with_err_code('appdmg ../../contrib/macdeploy/appdmg.json ./BFX-Qt.dmg')
 
-    file_name = '$(date +%Y-%m-%d)---' + os.environ['BRANCH'] + '-' + os.environ['COMMIT'][:7] + '---bfx-Qt---macOS.zip'
+    file_name = '$(date +%Y-%m-%d)---' + os.environ['BRANCH'] + '-' + os.environ['COMMIT'][:7] + '---BFX-Qt---macOS.zip'
 
-    nci.call_with_err_code('zip -j ' + file_name + ' ./bfx-Qt.dmg')
+    nci.call_with_err_code('zip -j ' + file_name + ' ./BFX-Qt.dmg')
     nci.call_with_err_code('mv ' + file_name + ' ' + deploy_dir)
     nci.call_with_err_code('echo "Binary package at ' + deploy_dir + file_name + '"')
     # set the SOURCE_DIR & SOURCE_PATH env vars, these point to the binary that will be uploaded

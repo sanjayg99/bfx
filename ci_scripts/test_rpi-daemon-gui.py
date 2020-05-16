@@ -23,10 +23,10 @@ if(os.environ['target_v'] == "rpi_daemon"):
   build_target_alt = 'bfxd'
 elif(os.environ['target_v'] == "rpi_wallet_test"):
   build_target = 'tests-bfx-qt'
-  build_target_alt = 'tests-bfx-Qt'
+  build_target_alt = 'tests-BFX-Qt'
 else:
   build_target = 'bfx-qt'
-  build_target_alt = 'bfx-Qt'
+  build_target_alt = 'BFX-Qt'
 
 # Install docker
 # nci.call_with_err_code('curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh && rm get-docker.sh')
@@ -44,7 +44,7 @@ else:
   nci.mkdir_p(os.path.join(working_dir,'.ccache', ''))
   nci.call_with_err_code('mv ' + os.path.join(working_dir,'.ccache', '') + ' ' + os.path.join(deploy_dir,'.ccache', ''))
 
-# Start Docker Container to Build bfxd or bfx-Qt
+# Start Docker Container to Build bfxd or BFX-Qt
 if (os.environ.get('TRAVIS_BUILD_DIR') is not None):
   nci.call_with_err_code('timeout --signal=SIGKILL 42m sudo docker run -e BRANCH=' + os.environ['BRANCH'] + ' -e BUILD=' + build_target + ' -v ' + os.environ['BUILD_DIR'] + ':/root/vol -t bfxteam/bfxd-build-ccache-rpi')
 else:

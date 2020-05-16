@@ -1072,8 +1072,8 @@ Det betyder, at et gebyr på mindst %2 er påkrævet.</translation>
     <message>
         <location filename="../guiutil.cpp" line="+420"/>
         <location line="+12"/>
-        <source>bfx-Qt</source>
-        <translation>bfx-Qt</translation>
+        <source>BFX-Qt</source>
+        <translation>BFX-Qt</translation>
     </message>
     <message>
         <location line="-12"/>
@@ -1552,8 +1552,8 @@ Det betyder, at et gebyr på mindst %2 er påkrævet.</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Show the bfx-Qt help message to get a list with possible bfx command-line options.</source>
-        <translation>Vis bfx-Qt hjælpe besked for at få en liste med mulige bfx kommandolinjeparametre.</translation>
+        <source>Show the BFX-Qt help message to get a list with possible bfx command-line options.</source>
+        <translation>Vis BFX-Qt hjælpe besked for at få en liste med mulige bfx kommandolinjeparametre.</translation>
     </message>
     <message>
         <location line="+3"/>

@@ -1088,8 +1088,8 @@ This label turns red, if the priority is smaller than &quot;medium&quot;.
     <message>
         <location filename="../guiutil.cpp" line="+424"/>
         <location line="+12"/>
-        <source>bfx-Qt</source>
-        <translation>bfx-Qt</translation>
+        <source>BFX-Qt</source>
+        <translation>BFX-Qt</translation>
     </message>
     <message>
         <location line="-12"/>
@@ -1568,8 +1568,8 @@ This label turns red, if the priority is smaller than &quot;medium&quot;.
     </message>
     <message>
         <location line="+7"/>
-        <source>Show the bfx-Qt help message to get a list with possible bfx command-line options.</source>
-        <translation>Show the bfx-Qt help message to get a list with possible bfx command-line options.</translation>
+        <source>Show the BFX-Qt help message to get a list with possible bfx command-line options.</source>
+        <translation>Show the BFX-Qt help message to get a list with possible bfx command-line options.</translation>
     </message>
     <message>
         <location line="+3"/>

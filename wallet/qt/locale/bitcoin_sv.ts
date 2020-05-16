@@ -1073,8 +1073,8 @@ Detta betyder att en avgift på minst %2 krävs.</translation>
     <message>
         <location filename="../guiutil.cpp" line="+420"/>
         <location line="+12"/>
-        <source>bfx-Qt</source>
-        <translation>bfx-Qt</translation>
+        <source>BFX-Qt</source>
+        <translation>BFX-Qt</translation>
     </message>
     <message>
         <location line="-12"/>
@@ -1553,8 +1553,8 @@ Detta betyder att en avgift på minst %2 krävs.</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Show the bfx-Qt help message to get a list with possible bfx command-line options.</source>
-        <translation>Visa bfx-Qt hjälp meddelandet för att få en lista över möjliga bfx kommandoradsalternativ.</translation>
+        <source>Show the BFX-Qt help message to get a list with possible bfx command-line options.</source>
+        <translation>Visa BFX-Qt hjälp meddelandet för att få en lista över möjliga bfx kommandoradsalternativ.</translation>
     </message>
     <message>
         <location line="+3"/>

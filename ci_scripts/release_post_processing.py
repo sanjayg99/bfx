@@ -37,28 +37,28 @@ def check_assets():
 
     for x in assets:
         global win_q_str
-        if ("bfx-Qt---windows_x86" in x.name and len(win_q_str) == 0):
+        if ("BFX-Qt---windows_x86" in x.name and len(win_q_str) == 0):
             x.sha256 = download_and_checksum(x.browser_download_url)
             if len(x.sha256) == 64:
                 win_q_str = '| ' + win_icon + ' | [Download ' + rel.tag_name + '<br/>For Windows](' + x.browser_download_url + ') | `' + x.sha256 + '` |'
                 # print(win_q_str)
 
         global mac_q_str
-        if ("bfx-Qt---macOS" in x.name and len(mac_q_str) == 0):
+        if ("BFX-Qt---macOS" in x.name and len(mac_q_str) == 0):
             x.sha256 = download_and_checksum(x.browser_download_url)
             if len(x.sha256) == 64:
                 mac_q_str = '| ' + mac_icon + ' | [Download ' + rel.tag_name + '<br/>For macOS](' + x.browser_download_url + ') | `' + x.sha256 + '` |'
                 # print(mac_q_str)
 
         global lin_q_str
-        if ("bfx-Qt---ubuntu16.04" in x.name and len(lin_q_str) == 0):
+        if ("BFX-Qt---ubuntu16.04" in x.name and len(lin_q_str) == 0):
             x.sha256 = download_and_checksum(x.browser_download_url)
             if len(x.sha256) == 64:
                 lin_q_str = '| ' + lin_icon + ' | [Download ' + rel.tag_name + '<br/>For Linux](' + x.browser_download_url + ') | `' + x.sha256 + '` |'
                 # print(lin_q_str)
 
         global rpi_q_str
-        if ("bfx-Qt---RPi-raspbian" in x.name and len(rpi_q_str) == 0):
+        if ("BFX-Qt---RPi-raspbian" in x.name and len(rpi_q_str) == 0):
             x.sha256 = download_and_checksum(x.browser_download_url)
             if len(x.sha256) == 64:
                 rpi_q_str = '| ' + rpi_icon + ' | [Download ' + rel.tag_name + '<br/>For Raspberry Pi](' + x.browser_download_url + ') | `' + x.sha256 + '` |'
@@ -88,14 +88,14 @@ def check_assets():
 
         # post docker RPi build once regular RPi Qt build is done building, since we cannot easily tell when the docker builds are done
         global docker_rpi_d_str
-        if ("bfx-Qt---RPi-raspbian" in x.name and len(docker_rpi_d_str) == 0):
+        if ("BFX-Qt---RPi-raspbian" in x.name and len(docker_rpi_d_str) == 0):
             x.sha256 = download_and_checksum(x.browser_download_url)
             if len(x.sha256) == 64:
                 docker_rpi_d_str = '| ' + docker_rpi_icon + ' | [Download ' + rel.tag_name + '<br/>For Docker on RPi (ARMv6hf)](' + 'https://hub.docker.com/r/bfxteam/bfxd-rpi/builds' + ') | `' + 'N/A' + '` |'
                 # print(rpi_d_str)
 
     # build our release body table
-    body.append('## bfx-Qt (Wallet with User Interface)')
+    body.append('## BFX-Qt (Wallet with User Interface)')
     body.append('| System | Download | Sha256 Checksum |')
     body.append('|:---:|:---:|:---|')
     if len(win_q_str) > 0:
@@ -157,10 +157,10 @@ def check_assets():
 def update_release_text(existing_body, new_body):
     existing_body_lines = existing_body.split('\r\n')
     # check if our release table already exists
-    if ('## bfx-Qt (Wallet with User Interface)' in existing_body_lines and
+    if ('## BFX-Qt (Wallet with User Interface)' in existing_body_lines and
         '## bfxd (Server Node. Command Line Only)' in existing_body_lines):
-        # slice out everything after ## bfx-Qt (Wallet with User Interface)
-        index = existing_body_lines.index('## bfx-Qt (Wallet with User Interface)')
+        # slice out everything after ## BFX-Qt (Wallet with User Interface)
+        index = existing_body_lines.index('## BFX-Qt (Wallet with User Interface)')
         original_body = existing_body_lines[:index]
         original_body.append(new_body)
         return "\r\n".join(original_body)

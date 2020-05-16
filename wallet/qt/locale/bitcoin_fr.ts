@@ -1072,8 +1072,8 @@ Cela implique que des frais à hauteur d&apos;au moins %2 seront nécessaires.</
     <message>
         <location filename="../guiutil.cpp" line="+420"/>
         <location line="+12"/>
-        <source>bfx-Qt</source>
-        <translation>bfx-Qt</translation>
+        <source>BFX-Qt</source>
+        <translation>BFX-Qt</translation>
     </message>
     <message>
         <location line="-12"/>
@@ -1552,8 +1552,8 @@ Cela implique que des frais à hauteur d&apos;au moins %2 seront nécessaires.</
     </message>
     <message>
         <location line="+7"/>
-        <source>Show the bfx-Qt help message to get a list with possible bfx command-line options.</source>
-        <translation>Afficher le message d&apos;aide bfx-Qt afin d&apos;obtenir la liste des options de de L&apos;outil en ligne de commande bfx</translation>
+        <source>Show the BFX-Qt help message to get a list with possible bfx command-line options.</source>
+        <translation>Afficher le message d&apos;aide BFX-Qt afin d&apos;obtenir la liste des options de de L&apos;outil en ligne de commande bfx</translation>
     </message>
     <message>
         <location line="+3"/>

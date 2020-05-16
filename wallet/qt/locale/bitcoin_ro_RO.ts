@@ -1072,8 +1072,8 @@ Acest lucru înseamnă că o taxă de cel puțin %2 este necesară</translation>
     <message>
         <location filename="../guiutil.cpp" line="+420"/>
         <location line="+12"/>
-        <source>bfx-Qt</source>
-        <translation>bfx-Qt</translation>
+        <source>BFX-Qt</source>
+        <translation>BFX-Qt</translation>
     </message>
     <message>
         <location line="-12"/>
@@ -1552,8 +1552,8 @@ Acest lucru înseamnă că o taxă de cel puțin %2 este necesară</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Show the bfx-Qt help message to get a list with possible bfx command-line options.</source>
-        <translation>Afișa mesajul de ajutor bfx-Qt pentru a obține o listă cu posibile opțiuni de linie de comandă bfx.</translation>
+        <source>Show the BFX-Qt help message to get a list with possible bfx command-line options.</source>
+        <translation>Afișa mesajul de ajutor BFX-Qt pentru a obține o listă cu posibile opțiuni de linie de comandă bfx.</translation>
     </message>
     <message>
         <location line="+3"/>

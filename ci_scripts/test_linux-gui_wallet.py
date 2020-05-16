@@ -78,7 +78,7 @@ else:
     nci.call_with_err_code('qmake "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" "OPENSSL_INCLUDE_PATH=' + openssl_include_path + '" "OPENSSL_LIB_PATH=' + openssl_lib_path + '" "QRENCODE_LIB_PATH=' + qrencode_lib_path + '" "QRENCODE_INCLUDE_PATH=' + qrencode_include_path + '" "PKG_CONFIG_PATH=' + pkg_config_path + '" ../bfx-wallet.pro')
     nci.call_with_err_code("make -j" + str(mp.cpu_count()))
 
-    file_name = '$(date +%Y-%m-%d)---' + os.environ['BRANCH'] + '-' + os.environ['COMMIT'][:7] + '---bfx-Qt---ubuntu16.04.tar.gz'
+    file_name = '$(date +%Y-%m-%d)---' + os.environ['BRANCH'] + '-' + os.environ['COMMIT'][:7] + '---BFX-Qt---ubuntu16.04.tar.gz'
 
     nci.call_with_err_code('tar -zcvf "' + file_name + '" -C ./wallet bfx-qt')
     nci.call_with_err_code('mv ' + file_name + ' ' + deploy_dir)

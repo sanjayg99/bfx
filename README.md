@@ -51,7 +51,7 @@ make "STATIC=1" -B -w -f makefile.unix -j4
 strip ./bfxd
 ```
 
-### Build bfx-Qt
+### Build BFX-Qt
 ```
 qmake "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" "QRENCODE_INCLUDE_PATH=$QRENCODE_INCLUDE_PATH" "QRENCODE_LIB_PATH=$QRENCODE_LIB_PATH" "BOOST_INCLUDE_PATH=$BOOST_INCLUDE_PATH" "BOOST_LIB_PATH=$BOOST_LIB_PATH" "OPENSSL_INCLUDE_PATH=$OPENSSL_INCLUDE_PATH" "OPENSSL_LIB_PATH=$OPENSSL_LIB_PATH" "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" ../bfx-wallet.pro
 make -B -w -j4
@@ -68,7 +68,7 @@ sudo mv mxe /
 export PATH=/mxe/mxe/usr/bin:$PATH
 ```
 
-### Build bfx-Qt 32 bit
+### Build BFX-Qt 32 bit
 ```
 i686-w64-mingw32.static-qmake-qt5 "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" bfx-wallet.pro
 make -B -w -j4
@@ -98,7 +98,7 @@ brew unlink qrencode      && brew link --force --overwrite qrencode
 brew unlink libsodium     && brew link --force --overwrite libsodium
 ```
 
-### Build bfx-Qt
+### Build BFX-Qt
 ```
 qmake "USE_UPNP=1" "USE_QRCODE=1" "RELEASE=1" bfx-wallet.pro
 make -B -w -j4
@@ -106,13 +106,13 @@ make -B -w -j4
 
 ### Prepare the .dmg file for release (optional)
 ```
-./contrib/macdeploy/macdeployqtplus ./bfx-Qt.app -add-qt-tr da,de,es,hu,ru,uk,zh_CN,zh_TW -verbose 1 -rpath /usr/local/opt/qt/lib
-appdmg ./contrib/macdeploy/appdmg.json ./bfx-Qt.dmg
+./contrib/macdeploy/macdeployqtplus ./BFX-Qt.app -add-qt-tr da,de,es,hu,ru,uk,zh_CN,zh_TW -verbose 1 -rpath /usr/local/opt/qt/lib
+appdmg ./contrib/macdeploy/appdmg.json ./BFX-Qt.dmg
 ```
 
 
 # BFX Command Line Parameters
-These parameters can be passed to bfxd or bfx-Qt at runtime. They can also be hardcoded in a bfx.conf file located in the data directory.
+These parameters can be passed to bfxd or BFX-Qt at runtime. They can also be hardcoded in a bfx.conf file located in the data directory.
 
 ```
 Usage:
@@ -195,7 +195,7 @@ SSL options:
 
 
 # BFX RPC Commands
-RPC commands are used to interact with a running instance of bfxd or bfx-Qt. They are used via the command line with bfxd, or via the bfx-Qt Debug Console.
+RPC commands are used to interact with a running instance of bfxd or BFX-Qt. They are used via the command line with bfxd, or via the BFX-Qt Debug Console.
 
 ```
 addmultisigaddress <nrequired> <'["key","key"]'> [account]

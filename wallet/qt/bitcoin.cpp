@@ -156,9 +156,9 @@ int main(int argc, char* argv[])
     app.setOrganizationName("BFX");
     // XXX app.setOrganizationDomain("");
     if (GetBoolArg("-testnet")) // Separate UI settings for testnet
-        app.setApplicationName("bfx-Qt-testnet");
+        app.setApplicationName("BFX-Qt-testnet");
     else
-        app.setApplicationName("bfx-Qt");
+        app.setApplicationName("BFX-Qt");
 
     // ... then GUI settings:
     OptionsModel optionsModel;

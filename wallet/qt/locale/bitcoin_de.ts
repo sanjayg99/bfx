@@ -1101,7 +1101,7 @@ Diese Anzeige wird rot, wenn die Grösse einer Transaktion 10000 byte überschre
     <message>
         <location filename="../guiutil.cpp" line="+420"/>
         <location line="+12"/>
-        <source>bfx-Qt</source>
+        <source>BFX-Qt</source>
         <translation type="unfinished"/>
     </message>
     <message>
@@ -1581,8 +1581,8 @@ Diese Anzeige wird rot, wenn die Grösse einer Transaktion 10000 byte überschre
     </message>
     <message>
         <location line="+7"/>
-        <source>Show the bfx-Qt help message to get a list with possible bfx command-line options.</source>
-        <translation>Anzeige der bfx-Qt Hilfe, um eine Liste der möglichen Kommandozeilenoptionen zu sehen.</translation>
+        <source>Show the BFX-Qt help message to get a list with possible bfx command-line options.</source>
+        <translation>Anzeige der BFX-Qt Hilfe, um eine Liste der möglichen Kommandozeilenoptionen zu sehen.</translation>
     </message>
     <message>
         <location line="+3"/>

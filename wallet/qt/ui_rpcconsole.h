@@ -376,7 +376,7 @@ public:
         openDataDirButton->setText(QApplication::translate("RPCConsole", "&Open", Q_NULLPTR));
         labelCLOptions->setText(QApplication::translate("RPCConsole", "Command-line options", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        showCLOptionsButton->setToolTip(QApplication::translate("RPCConsole", "Show the bfx-Qt help message to get a list with possible bfx command-line options.", Q_NULLPTR));
+        showCLOptionsButton->setToolTip(QApplication::translate("RPCConsole", "Show the BFX-Qt help message to get a list with possible bfx command-line options.", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
         showCLOptionsButton->setText(QApplication::translate("RPCConsole", "&Show", Q_NULLPTR));
         tabWidget->setTabText(tabWidget->indexOf(tab_info), QApplication::translate("RPCConsole", "&Information", Q_NULLPTR));

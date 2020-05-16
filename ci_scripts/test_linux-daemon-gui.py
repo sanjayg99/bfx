@@ -18,7 +18,7 @@ if(os.environ['target_v'] == "linux_daemon"):
   build_target_alt = 'bfxd'
 elif(os.environ['target_v'] == "linux_wallet_test"):
   build_target = 'tests-bfx-qt'
-  build_target_alt = 'tests-bfx-Qt'
+  build_target_alt = 'tests-BFX-Qt'
   os.chdir(os.environ['BUILD_DIR'])
   # download test data
   nci.call_with_err_code('wget --progress=dot:giga https://files.nebl.io/test_data_mainnet.tar.xz -O ./wallet/test/data/test_data_mainnet.tar.xz')
@@ -29,7 +29,7 @@ elif(os.environ['target_v'] == "linux_wallet_test"):
   os.chdir(deploy_dir)
 else:
   build_target = 'bfx-qt'
-  build_target_alt = 'bfx-Qt'
+  build_target_alt = 'BFX-Qt'
 
 # Install docker
 # nci.call_with_err_code('curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh && rm get-docker.sh')
@@ -38,7 +38,7 @@ else:
 nci.mkdir_p(os.path.join(working_dir,'.ccache', ''))
 nci.call_with_err_code('mv ' + os.path.join(working_dir,'.ccache', '') + ' ' + os.path.join(deploy_dir,'.ccache', ''))
 
-# Start Docker Container to Build bfxd or bfx-Qt
+# Start Docker Container to Build bfxd or BFX-Qt
 nci.call_with_err_code('sudo docker run -e BUILD=' + build_target + ' -v ' + os.environ['BUILD_DIR'] + ':/root/vol -t bfxteam/bfxd-build-ccache')
 nci.call_with_err_code('sleep 15 && sudo docker kill $(sudo docker ps -q);exit 0')
 

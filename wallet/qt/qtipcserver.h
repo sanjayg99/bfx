@@ -1,7 +1,7 @@
 #ifndef QTIPCSERVER_H
 #define QTIPCSERVER_H
 
-// Define bfx-Qt message queue name
+// Define BFX-Qt message queue name
 #define BITCOINURI_QUEUE_NAME "bfxURI"
 
 void ipcScanRelay(int argc, char *argv[]);
