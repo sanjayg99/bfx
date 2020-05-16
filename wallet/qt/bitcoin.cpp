@@ -104,7 +104,7 @@ static void handleRunawayException(std::exception* e)
     PrintExceptionContinue(e, "Runaway exception");
     QMessageBox::critical(
         0, "Runaway exception",
-        BitcoinGUI::tr("A fatal error occurred. bfx can no longer continue safely and will quit.") +
+        BitcoinGUI::tr("A fatal error occurred. BFX can no longer continue safely and will quit.") +
             QString("\n\n") + QString::fromStdString(strMiscWarning));
     exit(1);
 }
@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
         // directory)
         std::string datadirVal;
         mapArgs.get("-datadir", datadirVal);
-        QMessageBox::critical(0, "bfx",
+        QMessageBox::critical(0, "BFX",
                               QString("Error: Specified data directory \"%1\" does not exist.")
                                   .arg(QString::fromStdString(datadirVal)));
         return 1;
@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
 
     // Application identification (must be set before OptionsModel is initialized,
     // as it is used to locate QSettings)
-    app.setOrganizationName("bfx");
+    app.setOrganizationName("BFX");
     // XXX app.setOrganizationDomain("");
     if (GetBoolArg("-testnet")) // Separate UI settings for testnet
         app.setApplicationName("bfx-Qt-testnet");

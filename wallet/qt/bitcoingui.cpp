@@ -73,7 +73,7 @@ BitcoinGUI::BitcoinGUI(QWidget* parent)
       changePassphraseAction(0), unlockWalletAction(0), lockWalletAction(0), aboutQtAction(0),
       trayIcon(0), notificator(0), rpcConsole(0), nWeight(0)
 {
-    setWindowTitle(tr("bfx") + " - " + tr("Wallet"));
+    setWindowTitle(tr("BFX") + " - " + tr("Wallet"));
     qApp->setStyleSheet("QMainWindow { background-color: white;border:none;font-family:'Open "
                         "Sans,sans-serif'; } QStatusBar::item { border: 0px;} QDialog { "
                         "background-color: white;border:none;font-family:'Open "
@@ -1301,7 +1301,7 @@ void BitcoinGUI::finishCheckForBFXUpdates()
             if (updateAvailable) {
                 updaterLabel->setMovie(updaterUpdateExistsMovie);
                 updaterUpdateExistsMovie->start();
-                updaterLabel->setToolTip("A new bfx wallet version exists! Please click here for "
+                updaterLabel->setToolTip("A new BFX Wallet version exists! Please click here for "
                                          "release notes and a download link");
 
                 // change the action of clicking on the update icon to show the dialog
@@ -1317,7 +1317,7 @@ void BitcoinGUI::finishCheckForBFXUpdates()
             } else {
                 updaterLabel->setMovie(updaterCheckMovie);
                 updaterCheckMovie->start();
-                updaterLabel->setToolTip("Your BFX wallet application is up-to-date.");
+                updaterLabel->setToolTip("Your BFX Wallet application is up-to-date.");
             }
         } catch (std::exception& ex) {
             updaterLabel->setMovie(updaterErrorMovie);
