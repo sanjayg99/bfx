@@ -17,7 +17,7 @@ add_executable(bfx-tests
     key_tests.cpp
     mruset_tests.cpp
     netbase_tests.cpp
-    ntp1_tests.cpp
+    bfxt_tests.cpp
     pmt_tests.cpp
     rpc_tests.cpp
     script_tests.cpp
@@ -38,7 +38,7 @@ target_link_libraries(bfx-tests
     gtest
     core_lib
     zerocoin_lib
-    ntp1_lib
+    bfxt_lib
     curltools_lib
     json_spirit_lib
     txdb_lib
@@ -67,7 +67,7 @@ target_compile_definitions(bfx-tests PRIVATE
 
 option(BFX_DOWNLOAD_AND_TEST_ALL_TXS "[Unit-tests]: Enable downloading and testing all transactions" ON)
 option(BFX_DOWNLOAD_TX_DATA "[Unit-tests]: Enable downloading transaction data" OFF)
-option(BFX_RUN_NTP_PARSE_TESTS "[Unit-tests]: Enable NTP1 parsing tests" OFF)
+option(BFX_RUN_NTP_PARSE_TESTS "[Unit-tests]: Enable BFXT parsing tests" OFF)
 
 if(BFX_DOWNLOAD_AND_TEST_ALL_TXS)
     target_compile_definitions(bfx-tests PRIVATE UNITTEST_DOWNLOAD_PREMADE_TX_DATA_AND_RUN_PARSE_TESTS)

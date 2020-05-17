@@ -202,9 +202,9 @@ addmultisigaddress <nrequired> <'["key","key"]'> [account]
 addredeemscript <redeemScript> [account]
 backupwallet <destination>
 checkwallet
-createrawntp1transaction [{"txid":txid,"vout":n},...] {address:{tokenid/tokenName:tokenAmount},address:neblAmount,...} '{"userData":{"meta":[{"K1":"V1"},{},...]}}' [encrypt-metadata=false]
+createrawbfxttransaction [{"txid":txid,"vout":n},...] {address:{tokenid/tokenName:tokenAmount},address:neblAmount,...} '{"userData":{"meta":[{"K1":"V1"},{},...]}}' [encrypt-metadata=false]
 createrawtransaction [{"txid":txid,"vout":n},...] {address:amount,...}
-decoderawtransaction <hex string> [ignoreNTP1=false]
+decoderawtransaction <hex string> [ignoreBFXT=false]
 decodescript <hex string>
 dumpprivkey <bfxaddress>
 dumpwallet <filename>
@@ -215,8 +215,8 @@ getaccountaddress <account>
 getaddressesbyaccount <account>
 getbalance [account] [minconf=1]
 getbestblockhash
-getblock <hash> [verbose=true] [showtxns=false] [ignoreNTP1=false]
-getblockbynumber <number> [txinfo] [ignoreNTP1=false]
+getblock <hash> [verbose=true] [showtxns=false] [ignoreBFXT=false]
+getblockbynumber <number> [txinfo] [ignoreBFXT=false]
 getblockcount
 getblockhash <index>
 getblocktemplate [params]
@@ -227,16 +227,16 @@ getinfo
 getmininginfo
 getnewaddress [account]
 getnewpubkey [account]
-getntp1balance <tokenId/name> [minconf=1]
-getntp1balances [minconf=1]
+getbfxtbalance <tokenId/name> [minconf=1]
+getbfxtbalances [minconf=1]
 getpeerinfo
 getrawmempool
-getrawtransaction <txid> [verbose=0] [ignoreNTP1=false]
+getrawtransaction <txid> [verbose=0] [ignoreBFXT=false]
 getreceivedbyaccount <account> [minconf=1]
 getreceivedbyaddress <bfxaddress> [minconf=1]
 getstakinginfo
 getsubsidy [nTarget]
-gettransaction <txid> [ignoreNTP1=false]
+gettransaction <txid> [ignoreBFXT=false]
 getwork [data]
 getworkex [data, coinbase]
 help [command]
@@ -258,7 +258,7 @@ reservebalance [<reserve> [amount]]
 sendalert <message> <privatekey> <minver> <maxver> <priority> <id> [cancelupto]
 sendfrom <fromaccount> <tobfxaddress> <amount> [minconf=1] [comment] [comment-to]
 sendmany <fromaccount (must be empty, unsupported)> {address:amount,...} [comment]
-sendntp1toaddress <bfxaddress> <amount> <tokenId/tokenName> '{"userData":{"meta":[{"K1":"V1"},{},...]}}' [encrypt-metadata=false] [comment] [comment-to]
+sendbfxttoaddress <bfxaddress> <amount> <tokenId/tokenName> '{"userData":{"meta":[{"K1":"V1"},{},...]}}' [encrypt-metadata=false] [comment] [comment-to]
 sendrawtransaction <hex string>
 sendtoaddress <bfxaddress> <amount> [comment] [comment-to]
 setaccount <bfxaddress> <account>
@@ -310,7 +310,7 @@ Rewards are at the discretion of BFX, and we will not be awarding significant bo
 ### Critical
 - bugs which can take full control of BFX nodes.
 - bugs which can lead to private key leakage.
-- bugs which can lead to unauthorised transfer or generation of coins/NTP1 tokens.
+- bugs which can lead to unauthorised transfer or generation of coins/BFXT tokens.
 ### High
 - bugs which can incur Denial of Service (DoS) in the BFX network through P2P network.
 ### Medium

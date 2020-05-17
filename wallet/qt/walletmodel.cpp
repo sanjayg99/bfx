@@ -16,8 +16,8 @@
 #include <QTimer>
 
 #include "init.h"
-#include "ntp1/ntp1sendtxdata.h"
-#include "ntp1/ntp1tools.h"
+#include "bfxt/bfxtsendtxdata.h"
+#include "bfxt/bfxttools.h"
 
 #include "udaddress.h"
 
@@ -159,8 +159,8 @@ bool WalletModel::validateAddress(const QString& address)
 }
 
 WalletModel::SendCoinsReturn WalletModel::sendCoins(QList<SendCoinsRecipient>        recipients,
-                                                    boost::shared_ptr<NTP1Wallet>    ntp1wallet,
-                                                    const RawNTP1MetadataBeforeSend& ntp1metadata,
+                                                    boost::shared_ptr<BFXTWallet>    bfxtwallet,
+                                                    const RawBFXTMetadataBeforeSend& bfxtmetadata,
                                                     const CCoinControl*              coinControl)
 {
     qint64  total = 0;
@@ -191,7 +191,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(QList<SendCoinsRecipient>   
         if (rcp.amount <= 0) {
             return InvalidAmount;
         }
-        if (rcp.tokenId == QString::fromStdString(NTP1SendTxData::NEBL_TOKEN_ID)) {
+        if (rcp.tokenId == QString::fromStdString(BFXTSendTxData::NEBL_TOKEN_ID)) {
             // add only nebl amounts
             total += rcp.amount;
         }
@@ -218,13 +218,13 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(QList<SendCoinsRecipient>   
 
         // This first time selection is used adds recipients and the amounts to the selector
         bool           takeInputsFromCoinControl = coinControl != nullptr && coinControl->HasSelected();
-        NTP1SendTxData tokenCalculator;
+        BFXTSendTxData tokenCalculator;
         {
             // create recipients list
-            std::vector<NTP1SendTokensOneRecipientData> ntp1recipients;
-            std::transform(recipients.begin(), recipients.end(), std::back_inserter(ntp1recipients),
+            std::vector<BFXTSendTokensOneRecipientData> bfxtrecipients;
+            std::transform(recipients.begin(), recipients.end(), std::back_inserter(bfxtrecipients),
                            [](const SendCoinsRecipient& r) {
-                               NTP1SendTokensOneRecipientData res;
+                               BFXTSendTokensOneRecipientData res;
                                res.amount      = r.amount;
                                res.destination = r.address.toStdString();
                                res.tokenId     = r.tokenId.toStdString();
@@ -232,12 +232,12 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(QList<SendCoinsRecipient>   
                            });
 
             try {
-                tokenCalculator.selectNTP1Tokens(
-                    ntp1wallet,
+                tokenCalculator.selectBFXTTokens(
+                    bfxtwallet,
                     (takeInputsFromCoinControl ? coinControl->GetSelected() : std::vector<COutPoint>()),
-                    ntp1recipients, !takeInputsFromCoinControl);
+                    bfxtrecipients, !takeInputsFromCoinControl);
             } catch (std::exception& ex) {
-                SendCoinsReturn ret(StatusCode::NTP1TokenCalculationsFailed);
+                SendCoinsReturn ret(StatusCode::BFXTTokenCalculationsFailed);
                 ret.msg =
                     QString("Could not reserve the outputs necessary for spending. Error: ") + ex.what();
                 return ret;
@@ -249,8 +249,8 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(QList<SendCoinsRecipient>   
         foreach (const SendCoinsRecipient& rcp, recipients) {
             CScript scriptPubKey;
             scriptPubKey.SetDestination(CBitcoinAddress(rcp.address.toStdString()).Get());
-            // here we add only nebls. NTP1 tokens will be added at CreateTransaction()
-            if (rcp.tokenId == QString::fromStdString(NTP1SendTxData::NEBL_TOKEN_ID)) {
+            // here we add only nebls. BFXT tokens will be added at CreateTransaction()
+            if (rcp.tokenId == QString::fromStdString(BFXTSendTxData::NEBL_TOKEN_ID)) {
                 vecSend.push_back(make_pair(scriptPubKey, rcp.amount));
             }
         }
@@ -260,7 +260,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(QList<SendCoinsRecipient>   
         int64_t     nFeeRequired = 0;
         std::string errorMsg;
         bool fCreated = wallet->CreateTransaction(vecSend, wtx, keyChange, nFeeRequired, tokenCalculator,
-                                                  ntp1metadata, false, coinControl, &errorMsg);
+                                                  bfxtmetadata, false, coinControl, &errorMsg);
 
         if (!fCreated) {
             if ((total + nFeeRequired) > nBalance) // FIXME: could cause collisions in the future
@@ -271,15 +271,15 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(QList<SendCoinsRecipient>   
             ret.msg = QString::fromStdString("Error while creating the transaction: " + errorMsg);
             return ret;
         }
-        // verify the NTP1 transaction before commiting
+        // verify the BFXT transaction before commiting
         try {
-            std::vector<std::pair<CTransaction, NTP1Transaction>> inputsTxs =
-                NTP1Transaction::GetAllNTP1InputsOfTx(wtx, false);
-            NTP1Transaction ntp1tx;
-            ntp1tx.readNTP1DataFromTx(wtx, inputsTxs);
+            std::vector<std::pair<CTransaction, BFXTTransaction>> inputsTxs =
+                BFXTTransaction::GetAllBFXTInputsOfTx(wtx, false);
+            BFXTTransaction bfxttx;
+            bfxttx.readBFXTDataFromTx(wtx, inputsTxs);
         } catch (std::exception& ex) {
-            printf("An invalid NTP1 transaction was created; an exception was thrown: %s\n", ex.what());
-            SendCoinsReturn ret(StatusCode::NTP1TokenCalculationsFailed);
+            printf("An invalid BFXT transaction was created; an exception was thrown: %s\n", ex.what());
+            SendCoinsReturn ret(StatusCode::BFXTTokenCalculationsFailed);
             ret.msg =
                 "Unable to create the transaction. The transaction created would result in an invalid "
                 "transaction. Please report your transaction details to the BFX team. The "

@@ -5,7 +5,7 @@
 #include <map>
 #include <vector>
 
-#include "ntp1/ntp1wallet.h"
+#include "bfxt/bfxtwallet.h"
 
 #include "allocators.h" /* for SecureString */
 
@@ -52,13 +52,13 @@ public:
         DuplicateAddress,
         TransactionCreationFailed, // Error returned when wallet is still locked
         TransactionCommitFailed,
-        AddressContainsNTP1Tokens,
-        AddressNTP1TokensCheckFailed,
-        AddressNTP1TokensCheckFailedWrongNumberOfOutputs,
-        AddressNTP1TokensCheckFailedTxNotFound,
-        AddressNTP1TokensCheckFailedFailedToDecodeScriptPubKey,
-        EmptyNTP1TokenID,
-        NTP1TokenCalculationsFailed,
+        AddressContainsBFXTTokens,
+        AddressBFXTTokensCheckFailed,
+        AddressBFXTTokensCheckFailedWrongNumberOfOutputs,
+        AddressBFXTTokensCheckFailedTxNotFound,
+        AddressBFXTTokensCheckFailedFailedToDecodeScriptPubKey,
+        EmptyBFXTTokenID,
+        BFXTTokenCalculationsFailed,
         Aborted
     };
 
@@ -94,14 +94,14 @@ public:
         qint64     fee; // is used in case status is "AmountWithFeeExceedsBalance"
         QString    hex; // is filled with the transaction hash if status is "OK"
         QString
-                address; // is filled with address if a problem with an address exists (due to NTP1 tokens)
+                address; // is filled with address if a problem with an address exists (due to BFXT tokens)
         QString msg;     // error message, if necessary
     };
 
     // Send coins to a list of recipients
     SendCoinsReturn sendCoins(QList<SendCoinsRecipient>        recipients,
-                              boost::shared_ptr<NTP1Wallet>    ntp1wallet,
-                              const RawNTP1MetadataBeforeSend& ntp1metadata,
+                              boost::shared_ptr<BFXTWallet>    bfxtwallet,
+                              const RawBFXTMetadataBeforeSend& bfxtmetadata,
                               const CCoinControl*              coinControl = nullptr);
 
     // Wallet encryption

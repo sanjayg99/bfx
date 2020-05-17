@@ -1,6 +1,6 @@
 #include "udaddress.h"
 
-#include "ntp1/ntp1tools.h"
+#include "bfxt/bfxttools.h"
 
 const std::string  UnstoppableDomainsRegexStr = R"(^[a-zA-Z0-9\-]+\.(?:crypto|zil)$)";
 const boost::regex UnstoppableDomainsRegex(UnstoppableDomainsRegexStr);
@@ -34,8 +34,8 @@ boost::optional<std::string> GetBFXAddressFromUDAddress(const StringViewT UDDoma
         std::string        udData = cURLTools::GetFileFromHTTPS(*APICall, 30, false, true);
         json_spirit::Value val;
         json_spirit::read_or_throw(udData, val);
-        json_spirit::Object addressesObj = NTP1Tools::GetObjectField(val.get_obj(), "addresses");
-        return NTP1Tools::GetStrField(addressesObj, "BFX");
+        json_spirit::Object addressesObj = BFXTTools::GetObjectField(val.get_obj(), "addresses");
+        return BFXTTools::GetStrField(addressesObj, "BFX");
     } catch (const std::exception& ex) {
         printf("Failed to get address from unstoppable domain: %s", ex.what());
         return boost::none;

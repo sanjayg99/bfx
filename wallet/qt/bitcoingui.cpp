@@ -114,7 +114,7 @@ BitcoinGUI::BitcoinGUI(QWidget* parent)
 
     // Create tabs
     overviewPage    = new OverviewPage();
-    ntp1SummaryPage = new NTP1Summary();
+    bfxtSummaryPage = new BFXTSummary();
 
     transactionsPage  = new QWidget(this);
     QVBoxLayout* vbox = new QVBoxLayout();
@@ -132,7 +132,7 @@ BitcoinGUI::BitcoinGUI(QWidget* parent)
 
     centralWidget = new QStackedWidget(this);
     centralWidget->addWidget(overviewPage);
-    centralWidget->addWidget(ntp1SummaryPage);
+    centralWidget->addWidget(bfxtSummaryPage);
     centralWidget->addWidget(transactionsPage);
     centralWidget->addWidget(addressBookPage);
     centralWidget->addWidget(receiveCoinsPage);
@@ -272,11 +272,11 @@ void BitcoinGUI::createActions()
     overviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_1));
     tabGroup->addAction(overviewAction);
 
-    ntp1tokensAction = new QAction(QIcon(":/icons/ntp1summary"), tr("&NTP1 Tokens"), this);
-    ntp1tokensAction->setToolTip(tr("Show general overview of NTP1 tokens"));
-    ntp1tokensAction->setCheckable(true);
-    ntp1tokensAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_2));
-    tabGroup->addAction(ntp1tokensAction);
+    bfxttokensAction = new QAction(QIcon(":/icons/bfxtsummary"), tr("&BFXT Tokens"), this);
+    bfxttokensAction->setToolTip(tr("Show general overview of BFXT tokens"));
+    bfxttokensAction->setCheckable(true);
+    bfxttokensAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_2));
+    tabGroup->addAction(bfxttokensAction);
 
     sendCoinsAction = new QAction(QIcon(":/icons/send"), tr("&Send tokens"), this);
     sendCoinsAction->setToolTip(tr("Send tokens to a bfx address"));
@@ -304,8 +304,8 @@ void BitcoinGUI::createActions()
 
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(gotoOverviewPage()));
-    connect(ntp1tokensAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(ntp1tokensAction, SIGNAL(triggered()), this, SLOT(gotoNTP1SummaryPage()));
+    connect(bfxttokensAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(bfxttokensAction, SIGNAL(triggered()), this, SLOT(gotoBFXTSummaryPage()));
     connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(gotoSendCoinsPage()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
@@ -416,7 +416,7 @@ void BitcoinGUI::createToolBars()
 
     toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolbar->addAction(overviewAction);
-    toolbar->addAction(ntp1tokensAction);
+    toolbar->addAction(bfxttokensAction);
     toolbar->addAction(sendCoinsAction);
     toolbar->addAction(receiveCoinsAction);
     toolbar->addAction(historyAction);
@@ -485,7 +485,7 @@ void BitcoinGUI::setWalletModel(WalletModel* walletModel)
         receiveCoinsPage->setModel(walletModel->getAddressTableModel());
         sendCoinsPage->setModel(walletModel);
         signVerifyMessageDialog->setModel(walletModel);
-        ntp1SummaryPage->ui->issueNewNTP1TokenDialog->setWalletModel(walletModel);
+        bfxtSummaryPage->ui->issueNewBFXTTokenDialog->setWalletModel(walletModel);
 
         setEncryptionStatus(walletModel->getEncryptionStatus());
         connect(walletModel, SIGNAL(encryptionStatusChanged(int)), this, SLOT(setEncryptionStatus(int)));
@@ -675,14 +675,14 @@ void BitcoinGUI::setNumBlocks(int count, int nTotalBlocks)
             QIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
 
         overviewPage->showOutOfSyncWarning(false);
-        ntp1SummaryPage->showOutOfSyncWarning(false);
+        bfxtSummaryPage->showOutOfSyncWarning(false);
     } else {
         tooltip = tr("Catching up...") + QString("<br>") + tooltip;
         labelBlocksIcon->setMovie(syncIconMovie);
         syncIconMovie->start();
 
         overviewPage->showOutOfSyncWarning(true);
-        ntp1SummaryPage->showOutOfSyncWarning(true);
+        bfxtSummaryPage->showOutOfSyncWarning(true);
     }
 
     if (!text.isEmpty()) {
@@ -790,10 +790,10 @@ void BitcoinGUI::gotoOverviewPage()
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);
 }
 
-void BitcoinGUI::gotoNTP1SummaryPage()
+void BitcoinGUI::gotoBFXTSummaryPage()
 {
-    ntp1tokensAction->setChecked(true);
-    centralWidget->setCurrentWidget(ntp1SummaryPage);
+    bfxttokensAction->setChecked(true);
+    centralWidget->setCurrentWidget(bfxtSummaryPage);
 
     exportAction->setEnabled(false);
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);

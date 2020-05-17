@@ -12,7 +12,7 @@
 #include "init.h"
 #include "main.h"
 #include "net.h"
-#include "ntp1/ntp1transaction.h"
+#include "bfxt/bfxttransaction.h"
 #include "txdb.h"
 #include "wallet.h"
 
@@ -47,20 +47,20 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeH
 }
 
 template <typename T>
-json_spirit::Value GetNTP1TxMetadata(const CTransaction& tx) noexcept
+json_spirit::Value GetBFXTTxMetadata(const CTransaction& tx) noexcept
 {
-    static_assert(std::is_same<T, NTP1Script_Issuance>::value ||
-                      std::is_same<T, NTP1Script_Transfer>::value ||
-                      std::is_same<T, NTP1Script_Burn>::value,
+    static_assert(std::is_same<T, BFXTScript_Issuance>::value ||
+                      std::is_same<T, BFXTScript_Transfer>::value ||
+                      std::is_same<T, BFXTScript_Burn>::value,
                   "Unexpected type. Type should be one of the ones in the assert statement.");
 
     std::string opRet;
-    bool        isNTP1 = NTP1Transaction::IsTxNTP1(&tx, &opRet);
-    if (isNTP1) {
-        std::shared_ptr<NTP1Script> s  = NTP1Script::ParseScript(opRet);
+    bool        isBFXT = BFXTTransaction::IsTxBFXT(&tx, &opRet);
+    if (isBFXT) {
+        std::shared_ptr<BFXTScript> s  = BFXTScript::ParseScript(opRet);
         std::shared_ptr<T>          sd = std::dynamic_pointer_cast<T>(s);
         if (sd) {
-            return NTP1Script::GetMetadataAsJson(sd.get(), tx);
+            return BFXTScript::GetMetadataAsJson(sd.get(), tx);
         } else {
             return json_spirit::Value();
         }
@@ -68,25 +68,25 @@ json_spirit::Value GetNTP1TxMetadata(const CTransaction& tx) noexcept
     return json_spirit::Value();
 }
 
-void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry, bool ignoreNTP1 = false)
+void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry, bool ignoreBFXT = false)
 {
-    std::pair<CTransaction, NTP1Transaction> pair;
+    std::pair<CTransaction, BFXTTransaction> pair;
     std::string                              opRet;
-    bool                                     isNTP1 = NTP1Transaction::IsTxNTP1(&tx, &opRet);
+    bool                                     isBFXT = BFXTTransaction::IsTxBFXT(&tx, &opRet);
 
-    if (isNTP1 && !ignoreNTP1) {
+    if (isBFXT && !ignoreBFXT) {
         CTxDB txdb("r");
-        pair = std::make_pair(CTransaction::FetchTxFromDisk(tx.GetHash()), NTP1Transaction());
-        FetchNTP1TxFromDisk(pair, txdb, false);
+        pair = std::make_pair(CTransaction::FetchTxFromDisk(tx.GetHash()), BFXTTransaction());
+        FetchBFXTTxFromDisk(pair, txdb, false);
         if (pair.second.isNull()) {
-            isNTP1 = false;
+            isBFXT = false;
         }
     }
     entry.push_back(Pair("txid", tx.GetHash().GetHex()));
     entry.push_back(Pair("version", tx.nVersion));
     entry.push_back(Pair("time", (int64_t)tx.nTime));
     entry.push_back(Pair("locktime", (int64_t)tx.nLockTime));
-    entry.push_back(Pair("ntp1", isNTP1));
+    entry.push_back(Pair("bfxt", isBFXT));
     Array vin;
     for (unsigned int i = 0; i < tx.vin.size(); i++) {
         const CTxIn& txin = tx.vin[i];
@@ -101,19 +101,19 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry, bo
             o.push_back(Pair("asm", txin.scriptSig.ToString()));
             o.push_back(Pair("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end())));
             in.push_back(Pair("scriptSig", o));
-            if (isNTP1 && !ignoreNTP1) {
+            if (isBFXT && !ignoreBFXT) {
                 for (unsigned int t = 0; t < pair.second.getTxIn(i).getNumOfTokens(); t++) {
                     json_spirit::Value n = pair.second.getTxIn(i).getToken(t).exportDatabaseJsonData();
                     uint256            issuanceTxid = pair.second.getTxIn(i).getToken(t).getIssueTxId();
                     json_spirit::Value issuanceJson =
-                        NTP1Transaction::GetNTP1IssuanceMetadata(issuanceTxid);
+                        BFXTTransaction::GetBFXTIssuanceMetadata(issuanceTxid);
                     n.get_obj().push_back(json_spirit::Pair("metadataOfIssuance", issuanceJson));
                     tokens.push_back(n);
                 }
             }
         }
         in.push_back(Pair("sequence", (int64_t)txin.nSequence));
-        if (isNTP1 && !ignoreNTP1) {
+        if (isBFXT && !ignoreBFXT) {
             in.push_back(Pair("tokens", tokens));
         }
         vin.push_back(in);
@@ -129,11 +129,11 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry, bo
         Object o;
         ScriptPubKeyToJSON(txout.scriptPubKey, o, false);
         out.push_back(Pair("scriptPubKey", o));
-        if (isNTP1 && !ignoreNTP1) {
+        if (isBFXT && !ignoreBFXT) {
             for (unsigned int t = 0; t < pair.second.getTxOut(i).tokenCount(); t++) {
                 json_spirit::Value n = pair.second.getTxOut(i).getToken(t).exportDatabaseJsonData();
                 uint256            issuanceTxid = pair.second.getTxOut(i).getToken(t).getIssueTxId();
-                json_spirit::Value issuanceJson = NTP1Transaction::GetNTP1IssuanceMetadata(issuanceTxid);
+                json_spirit::Value issuanceJson = BFXTTransaction::GetBFXTIssuanceMetadata(issuanceTxid);
                 n.get_obj().push_back(json_spirit::Pair("metadataOfIssuance", issuanceJson));
                 tokens.push_back(n);
             }
@@ -144,18 +144,18 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry, bo
     entry.push_back(Pair("vout", vout));
 
     {
-        if (isNTP1 && !ignoreNTP1) {
-            std::shared_ptr<NTP1Script> s = NTP1Script::ParseScript(opRet);
+        if (isBFXT && !ignoreBFXT) {
+            std::shared_ptr<BFXTScript> s = BFXTScript::ParseScript(opRet);
             if (s && s->getProtocolVersion() >= 3) {
-                if (s->getTxType() == NTP1Script::TxType_Issuance) {
+                if (s->getTxType() == BFXTScript::TxType_Issuance) {
                     entry.push_back(json_spirit::Pair("metadataOfUtxos",
-                                                      GetNTP1TxMetadata<NTP1Script_Issuance>(tx)));
-                } else if (s->getTxType() == NTP1Script::TxType_Transfer) {
+                                                      GetBFXTTxMetadata<BFXTScript_Issuance>(tx)));
+                } else if (s->getTxType() == BFXTScript::TxType_Transfer) {
                     entry.push_back(json_spirit::Pair("metadataOfUtxos",
-                                                      GetNTP1TxMetadata<NTP1Script_Transfer>(tx)));
-                } else if (s->getTxType() == NTP1Script::TxType_Burn) {
+                                                      GetBFXTTxMetadata<BFXTScript_Transfer>(tx)));
+                } else if (s->getTxType() == BFXTScript::TxType_Burn) {
                     entry.push_back(
-                        json_spirit::Pair("metadataOfUtxos", GetNTP1TxMetadata<NTP1Script_Burn>(tx)));
+                        json_spirit::Pair("metadataOfUtxos", GetBFXTTxMetadata<BFXTScript_Burn>(tx)));
                 }
             }
         }
@@ -179,11 +179,11 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry, bo
 Value getrawtransaction(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 3)
-        throw runtime_error("getrawtransaction <txid> [verbose=0] [ignoreNTP1=false]\n"
+        throw runtime_error("getrawtransaction <txid> [verbose=0] [ignoreBFXT=false]\n"
                             "If verbose=0, returns a string that is\n"
                             "serialized, hex-encoded data for <txid>.\n"
                             "If verbose is non-zero, returns an Object\n"
-                            "with information about <txid>. Not ignoring NTP1 will try to retireve NTP1 "
+                            "with information about <txid>. Not ignoring BFXT will try to retireve BFXT "
                             "data from the database. This won't work if the transaction is not in the "
                             "blockchain.");
 
@@ -206,13 +206,13 @@ Value getrawtransaction(const Array& params, bool fHelp)
     if (!fVerbose)
         return strHex;
 
-    bool fIgnoreNTP1 = false;
+    bool fIgnoreBFXT = false;
     if (params.size() > 2)
-        fIgnoreNTP1 = params[2].get_bool();
+        fIgnoreBFXT = params[2].get_bool();
 
     Object result;
     result.push_back(Pair("hex", strHex));
-    TxToJSON(tx, hashBlock, result, fIgnoreNTP1);
+    TxToJSON(tx, hashBlock, result, fIgnoreBFXT);
     return result;
 }
 
@@ -258,10 +258,10 @@ Value listunspent(const Array& params, bool fHelp)
         if (out.nDepth < nMinDepth || out.nDepth > nMaxDepth)
             continue;
 
-        std::vector<std::pair<CTransaction, NTP1Transaction>> ntp1inputs =
-            NTP1Transaction::GetAllNTP1InputsOfTx(static_cast<CTransaction>(*out.tx), false);
-        NTP1Transaction ntp1tx;
-        ntp1tx.readNTP1DataFromTx(static_cast<CTransaction>(*out.tx), ntp1inputs);
+        std::vector<std::pair<CTransaction, BFXTTransaction>> bfxtinputs =
+            BFXTTransaction::GetAllBFXTInputsOfTx(static_cast<CTransaction>(*out.tx), false);
+        BFXTTransaction bfxttx;
+        bfxttx.readBFXTDataFromTx(static_cast<CTransaction>(*out.tx), bfxtinputs);
 
         if (setAddress.size()) {
             CTxDestination address;
@@ -287,8 +287,8 @@ Value listunspent(const Array& params, bool fHelp)
         entry.push_back(Pair("amount", ValueFromAmount(nValue)));
         entry.push_back(Pair("confirmations", out.nDepth));
         json_spirit::Array tokensRoot;
-        for (int i = 0; i < (int)ntp1tx.getTxOut(out.i).tokenCount(); i++) {
-            tokensRoot.push_back(ntp1tx.getTxOut(out.i).getToken(i).exportDatabaseJsonData());
+        for (int i = 0; i < (int)bfxttx.getTxOut(out.i).tokenCount(); i++) {
+            tokensRoot.push_back(bfxttx.getTxOut(out.i).getToken(i).exportDatabaseJsonData());
         }
         entry.push_back(Pair("tokens", Value(tokensRoot)));
         results.push_back(entry);
@@ -361,12 +361,12 @@ Value createrawtransaction(const Array& params, bool fHelp)
     return HexStr(ss.begin(), ss.end());
 }
 
-Value createrawntp1transaction(const Array& params, bool fHelp)
+Value createrawbfxttransaction(const Array& params, bool fHelp)
 {
     if (fHelp || (params.size() != 2 && params.size() != 3 && params.size() != 4))
         throw runtime_error(
-            "createrawntp1transaction [{\"txid\":txid,\"vout\":n},...] "
-            "{address:{tokenid/tokenName:tokenAmount},{address:neblAmount,...}} [NTP1 Metadata=\"\"] "
+            "createrawbfxttransaction [{\"txid\":txid,\"vout\":n},...] "
+            "{address:{tokenid/tokenName:tokenAmount},{address:neblAmount,...}} [BFXT Metadata=\"\"] "
             "[Encrypt-metadata=false]\n"
             "Create a transaction spending given inputs\n"
             "(array of objects containing transaction id and output number),\n"
@@ -379,23 +379,23 @@ Value createrawntp1transaction(const Array& params, bool fHelp)
     Array                     inputs = params[0].get_array();
     Object                    sendTo = params[1].get_obj();
     std::string               processedMetadata;
-    RawNTP1MetadataBeforeSend rawNTP1Data("", false);
+    RawBFXTMetadataBeforeSend rawBFXTData("", false);
     if (params.size() > 2) {
-        rawNTP1Data.metadata = params[2].get_str();
+        rawBFXTData.metadata = params[2].get_str();
     }
     if (params.size() > 3) {
-        rawNTP1Data.encrypt = params[3].get_bool();
+        rawBFXTData.encrypt = params[3].get_bool();
     }
 
     CTransaction rawTx;
 
-    boost::shared_ptr<NTP1Wallet> ntp1wallet = boost::make_shared<NTP1Wallet>();
-    ntp1wallet->setRetrieveFullMetadata(false);
-    ntp1wallet->update();
+    boost::shared_ptr<BFXTWallet> bfxtwallet = boost::make_shared<BFXTWallet>();
+    bfxtwallet->setRetrieveFullMetadata(false);
+    bfxtwallet->update();
 
-    // create the list of recipients that's compatible with NTP1 token selector
-    std::vector<NTP1SendTokensOneRecipientData> ntp1recipients =
-        GetNTP1RecipientsVector(sendTo, ntp1wallet);
+    // create the list of recipients that's compatible with BFXT token selector
+    std::vector<BFXTSendTokensOneRecipientData> bfxtrecipients =
+        GetBFXTRecipientsVector(sendTo, bfxtwallet);
 
     // create inputs' vector
     std::vector<COutPoint> cinputs;
@@ -419,13 +419,13 @@ Value createrawntp1transaction(const Array& params, bool fHelp)
         cinputs.push_back(COutPoint(uint256(txid), nOutput));
     }
 
-    NTP1SendTxData tokenSelector;
-    tokenSelector.selectNTP1Tokens(ntp1wallet, cinputs, ntp1recipients, false);
+    BFXTSendTxData tokenSelector;
+    tokenSelector.selectBFXTTokens(bfxtwallet, cinputs, bfxtrecipients, false);
 
-    const std::map<std::string, NTP1Int>& changeMap    = tokenSelector.getChangeTokens();
-    NTP1Int                               changeTokens = std::accumulate(
-        changeMap.begin(), changeMap.end(), NTP1Int(0),
-        [](NTP1Int n, const std::pair<std::string, NTP1Int>& p1) { return n + p1.second; });
+    const std::map<std::string, BFXTInt>& changeMap    = tokenSelector.getChangeTokens();
+    BFXTInt                               changeTokens = std::accumulate(
+        changeMap.begin(), changeMap.end(), BFXTInt(0),
+        [](BFXTInt n, const std::pair<std::string, BFXTInt>& p1) { return n + p1.second; });
 
     if (changeTokens > 0) {
         std::string except_msg;
@@ -433,39 +433,39 @@ Value createrawntp1transaction(const Array& params, bool fHelp)
             // safety
             if (changeMap.size() > 0) {
                 std::string tokenId      = changeMap.begin()->first;
-                NTP1Int     changeAmount = changeMap.begin()->second;
+                BFXTInt     changeAmount = changeMap.begin()->second;
 
-                std::string tokenName = ntp1wallet->getTokenMetadataMap().at(tokenId).getTokenName();
+                std::string tokenName = bfxtwallet->getTokenMetadataMap().at(tokenId).getTokenName();
 
                 except_msg =
-                    "The transaction has NTP1 tokens change. Please spend all NTP1 tokens in the "
+                    "The transaction has BFXT tokens change. Please spend all BFXT tokens in the "
                     "transaction. Token with name " +
                     tokenName + " and ID " + tokenId +
                     " has the following amount unspent: " + ::ToString(changeAmount);
             }
         } catch (std::exception&) {
-            throw std::runtime_error("The transaction has NTP1 tokens change. Please spend all NTP1 "
+            throw std::runtime_error("The transaction has BFXT tokens change. Please spend all BFXT "
                                      "tokens in the transaction");
         }
 
         throw std::runtime_error(except_msg);
     }
 
-    std::vector<NTP1OutPoint> usedInputs = tokenSelector.getUsedInputs();
+    std::vector<BFXTOutPoint> usedInputs = tokenSelector.getUsedInputs();
 
-    for (const NTP1OutPoint& in : usedInputs) {
+    for (const BFXTOutPoint& in : usedInputs) {
         rawTx.vin.push_back(CTxIn(in.getHash(), in.getIndex()));
     }
 
     // Pre-check input data for validity
-    for (const NTP1SendTokensOneRecipientData& rcp : ntp1recipients) {
+    for (const BFXTSendTokensOneRecipientData& rcp : bfxtrecipients) {
         CScript scriptPubKey;
         scriptPubKey.SetDestination(CBitcoinAddress(rcp.destination).Get());
-        // here we add only nebls. NTP1 tokens will be added later
-        if (rcp.tokenId == NTP1SendTxData::NEBL_TOKEN_ID) {
+        // here we add only nebls. BFXT tokens will be added later
+        if (rcp.tokenId == BFXTSendTxData::NEBL_TOKEN_ID) {
             using NeblInt = int64_t;
             NeblInt val   = 0;
-            if (rcp.amount > NTP1Int(std::numeric_limits<NeblInt>::max())) {
+            if (rcp.amount > BFXTInt(std::numeric_limits<NeblInt>::max())) {
                 val = std::numeric_limits<NeblInt>::max();
             } else if (rcp.amount < 0) {
                 val = 0;
@@ -476,17 +476,17 @@ Value createrawntp1transaction(const Array& params, bool fHelp)
         }
     }
 
-    // add NTP1 outputs to tx
+    // add BFXT outputs to tx
     int tokenOutputOffset = -1;
-    tokenOutputOffset     = CWallet::AddNTP1TokenOutputsToTx(rawTx, tokenSelector);
+    tokenOutputOffset     = CWallet::AddBFXTTokenOutputsToTx(rawTx, tokenSelector);
 
-    // add NTP1 inputs to tx
-    std::vector<NTP1Script::TransferInstruction> TIs;
-    TIs = CWallet::AddNTP1TokenInputsToTx(rawTx, tokenSelector, tokenOutputOffset);
+    // add BFXT inputs to tx
+    std::vector<BFXTScript::TransferInstruction> TIs;
+    TIs = CWallet::AddBFXTTokenInputsToTx(rawTx, tokenSelector, tokenOutputOffset);
 
     processedMetadata =
-        rawNTP1Data.applyMetadataEncryption(rawTx, tokenSelector.getNTP1TokenRecipientsList());
-    CWallet::SetTxNTP1OpRet(rawTx, TIs, processedMetadata);
+        rawBFXTData.applyMetadataEncryption(rawTx, tokenSelector.getBFXTTokenRecipientsList());
+    CWallet::SetTxBFXTOpRet(rawTx, TIs, processedMetadata);
 
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
     ss << rawTx;
@@ -496,9 +496,9 @@ Value createrawntp1transaction(const Array& params, bool fHelp)
 Value decoderawtransaction(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 2)
-        throw runtime_error("decoderawtransaction <hex string> [ignoreNTP1=false]\n"
+        throw runtime_error("decoderawtransaction <hex string> [ignoreBFXT=false]\n"
                             "Return a JSON object representing the serialized, hex-encoded transaction. "
-                            "Not ignoring NTP1 will try to retireve NTP1 data from the database. This "
+                            "Not ignoring BFXT will try to retireve BFXT data from the database. This "
                             "won't work if the transaction is not in the blockchain.");
 
     RPCTypeCheck(params, list_of(str_type));
@@ -512,12 +512,12 @@ Value decoderawtransaction(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
     }
 
-    bool fIgnoreNTP1 = false;
+    bool fIgnoreBFXT = false;
     if (params.size() > 1)
-        fIgnoreNTP1 = params[1].get_bool();
+        fIgnoreBFXT = params[1].get_bool();
 
     Object result;
-    TxToJSON(tx, 0, result, fIgnoreNTP1);
+    TxToJSON(tx, 0, result, fIgnoreBFXT);
 
     return result;
 }

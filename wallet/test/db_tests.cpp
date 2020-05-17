@@ -2,13 +2,13 @@
 
 #include "curltools.h"
 #include "hash.h"
-#include "ntp1/ntp1tools.h"
+#include "bfxt/bfxttools.h"
 #include <boost/algorithm/string.hpp>
 #include <fstream>
 #include <unordered_map>
 #include <unordered_set>
 
-const std::string TempNTP1File("ntp1txout.bin");
+const std::string TempBFXTFile("bfxttxout.bin");
 
 std::string RandomString(const int len)
 {
@@ -289,12 +289,12 @@ TEST(quicksync_tests, download_index_file)
     json_spirit::Array rootArray = parsedData.get_array();
     ASSERT_GE(rootArray.size(), 1u);
     for (const json_spirit::Value& val : rootArray) {
-        json_spirit::Array files         = NTP1Tools::GetArrayField(val.get_obj(), "files");
+        json_spirit::Array files         = BFXTTools::GetArrayField(val.get_obj(), "files");
         bool               lockFileFound = false;
         for (const json_spirit::Value& fileVal : files) {
-            json_spirit::Array urlsObj  = NTP1Tools::GetArrayField(fileVal.get_obj(), "url");
-            std::string        sum      = NTP1Tools::GetStrField(fileVal.get_obj(), "sha256sum");
-            int64_t            fileSize = NTP1Tools::GetInt64Field(fileVal.get_obj(), "size");
+            json_spirit::Array urlsObj  = BFXTTools::GetArrayField(fileVal.get_obj(), "url");
+            std::string        sum      = BFXTTools::GetStrField(fileVal.get_obj(), "sha256sum");
+            int64_t            fileSize = BFXTTools::GetInt64Field(fileVal.get_obj(), "size");
             std::string        sumBin   = boost::algorithm::unhex(sum);
             EXPECT_GT(fileSize, 0);
             ASSERT_GE(urlsObj.size(), 0u);
@@ -324,8 +324,8 @@ TEST(quicksync_tests, download_index_file)
                 }
                 // test the data file, if this iteration is for the data file
                 //            if (boost::algorithm::ends_with(url, "data.mdb")) {
-                //                std::string url    = NTP1Tools::GetStrField(fileVal.get_obj(), "url");
-                //                std::string sum    = NTP1Tools::GetStrField(fileVal.get_obj(),
+                //                std::string url    = BFXTTools::GetStrField(fileVal.get_obj(), "url");
+                //                std::string sum    = BFXTTools::GetStrField(fileVal.get_obj(),
                 //                "sha256sum"); std::string sumBin = boost::algorithm::unhex(sum);
                 //                {
                 //                    // test by downloading to a file and calculating the hash
@@ -357,6 +357,6 @@ TEST(quicksync_tests, download_index_file)
             }
         }
         EXPECT_TRUE(lockFileFound) << "For one entry, lock file not found: " << QuickSyncDataLink;
-        std::string os = NTP1Tools::GetStrField(val.get_obj(), "os");
+        std::string os = BFXTTools::GetStrField(val.get_obj(), "os");
     }
 }

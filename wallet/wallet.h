@@ -13,7 +13,7 @@
 #include "key.h"
 #include "keystore.h"
 #include "merkletx.h"
-#include "ntp1/ntp1sendtxdata.h"
+#include "bfxt/bfxtsendtxdata.h"
 #include "script.h"
 #include "ui_interface.h"
 #include "util.h"
@@ -86,7 +86,7 @@ private:
     bool SelectCoins(int64_t nTargetValue, unsigned int nSpendTime,
                      std::set<std::pair<const CWalletTx*, unsigned int>>& setCoinsRet,
                      int64_t& nValueRet, const CCoinControl* coinControl = nullptr,
-                     bool avoidNTP1Outputs = false) const;
+                     bool avoidBFXTOutputs = false) const;
 
     CWalletDB* pwalletdbEncryption;
 
@@ -165,7 +165,7 @@ public:
     bool SelectCoinsMinConf(int64_t nTargetValue, unsigned int nSpendTime, int nConfMine,
                             int nConfTheirs, std::vector<COutput> vCoins,
                             std::set<std::pair<const CWalletTx*, unsigned int>>& setCoinsRet,
-                            int64_t& nValueRet, bool avoidNTP1Outputs = false) const;
+                            int64_t& nValueRet, bool avoidBFXTOutputs = false) const;
 
     // keystore implementation
     // Generate a new key
@@ -228,14 +228,14 @@ public:
     int64_t GetStake() const;
     int64_t GetNewMint() const;
     bool    CreateTransaction(const std::vector<std::pair<CScript, int64_t>>& vecSend, CWalletTx& wtxNew,
-                              CReserveKey& reservekey, int64_t& nFeeRet, NTP1SendTxData ntp1TxData,
-                              const RawNTP1MetadataBeforeSend& ntp1metadata = RawNTP1MetadataBeforeSend(),
-                              bool isNTP1Issuance = false, const CCoinControl* coinControl = nullptr,
+                              CReserveKey& reservekey, int64_t& nFeeRet, BFXTSendTxData bfxtTxData,
+                              const RawBFXTMetadataBeforeSend& bfxtmetadata = RawBFXTMetadataBeforeSend(),
+                              bool isBFXTIssuance = false, const CCoinControl* coinControl = nullptr,
                               std::string* errorMsg = nullptr);
     bool    CreateTransaction(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNew,
-                              CReserveKey& reservekey, int64_t& nFeeRet, const NTP1SendTxData& ntp1TxData,
-                              const RawNTP1MetadataBeforeSend& ntp1metadata = RawNTP1MetadataBeforeSend(),
-                              bool isNTP1Issuance = false, const CCoinControl* coinControl = nullptr);
+                              CReserveKey& reservekey, int64_t& nFeeRet, const BFXTSendTxData& bfxtTxData,
+                              const RawBFXTMetadataBeforeSend& bfxtmetadata = RawBFXTMetadataBeforeSend(),
+                              bool isBFXTIssuance = false, const CCoinControl* coinControl = nullptr);
     bool    CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey);
 
     bool GetStakeWeight(const CKeyStore& keystore, uint64_t& nMinWeight, uint64_t& nMaxWeight,
@@ -247,9 +247,9 @@ public:
     std::string SendMoneyToDestination(const CTxDestination& address, int64_t nValue, CWalletTx& wtxNew,
                                        bool fAskFee = false);
     std::string
-    SendNTP1ToDestination(const CTxDestination& address, int64_t nValue, const std::string& tokenId,
-                          CWalletTx& wtxNew, boost::shared_ptr<NTP1Wallet> ntp1wallet,
-                          const RawNTP1MetadataBeforeSend& ntp1metadata = RawNTP1MetadataBeforeSend(),
+    SendBFXTToDestination(const CTxDestination& address, int64_t nValue, const std::string& tokenId,
+                          CWalletTx& wtxNew, boost::shared_ptr<BFXTWallet> bfxtwallet,
+                          const RawBFXTMetadataBeforeSend& bfxtmetadata = RawBFXTMetadataBeforeSend(),
                           bool                             fAskFee      = false);
 
     bool    NewKeyPool();
@@ -328,42 +328,42 @@ public:
         NotifyTransactionChanged;
 
     /**
-     * @brief AddNTP1TokenInputsToTx
+     * @brief AddBFXTTokenInputsToTx
      * @param wtxNew
      * @param nativeInputs
-     * @param ntp1TxData
+     * @param bfxtTxData
      * @param tokenOutputsOffset
      * @return returns transfer instructions that are compatible with these
      * inputs for everything EXCEPT change, where change will remain unchanged from intermediary TIs
      */
-    static std::vector<NTP1Script::TransferInstruction>
-    AddNTP1TokenInputsToTx(CTransaction& wtxNew, const NTP1SendTxData& ntp1TxData,
+    static std::vector<BFXTScript::TransferInstruction>
+    AddBFXTTokenInputsToTx(CTransaction& wtxNew, const BFXTSendTxData& bfxtTxData,
                            const int tokenOutputsOffset);
 
     /**
      * creates outputs in transaction. This
      * is important because the outputs have to be determined BEFORE change is determined
      *
-     * @brief AddNTP1TokenOutputsToTx
+     * @brief AddBFXTTokenOutputsToTx
      * @param wtxNew
      * @param nativeInputs
-     * @param ntp1TxData
+     * @param bfxtTxData
      * @return token outputs offset (to be used with TIs)
      */
-    static int AddNTP1TokenOutputsToTx(CTransaction& wtxNew, const NTP1SendTxData& ntp1TxData);
+    static int AddBFXTTokenOutputsToTx(CTransaction& wtxNew, const BFXTSendTxData& bfxtTxData);
 
     /**
      * Find the OP_RETURN output and set the correct OP_RETURN argument in it based on the given TIs
      * (transfer instructions). If TIs list is empty, noting will be changed.
      *
-     * @brief SetTxNTP1OpRet
+     * @brief SetTxBFXTOpRet
      * @param wtxNew
      * @param TIs
      */
-    static void SetTxNTP1OpRet(CTransaction& wtxNew, const std::shared_ptr<NTP1Script>& script);
+    static void SetTxBFXTOpRet(CTransaction& wtxNew, const std::shared_ptr<BFXTScript>& script);
     static void
-    SetTxNTP1OpRet(CTransaction& wtxNew, const std::vector<NTP1Script::TransferInstruction>& TIs,
-                   const std::string               ntp1metadata,
+    SetTxBFXTOpRet(CTransaction& wtxNew, const std::vector<BFXTScript::TransferInstruction>& TIs,
+                   const std::string               bfxtmetadata,
                    boost::optional<IssueTokenData> issuanceData = boost::optional<IssueTokenData>());
 };
 

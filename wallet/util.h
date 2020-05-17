@@ -171,7 +171,7 @@ extern bool                                                     fLogTimestamps;
 extern bool                                                     fReopenDebugLog;
 extern boost::atomic<bool>                                      fShutdown;
 
-const std::string NTP1WalletCacheFileName = "NTP1DataCacheV2.json";
+const std::string BFXTWalletCacheFileName = "BFXTDataCacheV2.json";
 
 void RandAddSeed();
 void RandAddSeedPerfmon();
@@ -291,7 +291,7 @@ typename std::enable_if<std::is_convertible<U, std::string>::value, T>::type Fro
 }
 
 template <typename T, typename U>
-typename std::enable_if<!std::is_convertible<U, std::string>::value && std::is_same<T, NTP1Int>::value,
+typename std::enable_if<!std::is_convertible<U, std::string>::value && std::is_same<T, BFXTInt>::value,
                         T>::type
 FromString(U&& str)
 {

@@ -21,7 +21,7 @@ int64_t                 nWalletUnlockTime;
 static CCriticalSection cs_nWalletUnlockTime;
 
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry,
-                     bool ignoreNTP1);
+                     bool ignoreBFXT);
 
 static void accountingDeprecationCheck()
 {
@@ -318,10 +318,10 @@ Value sendtoaddress(const Array& params, bool fHelp)
     return wtx.GetHash().GetHex();
 }
 
-Value sendntp1toaddress(const Array& params, bool fHelp)
+Value sendbfxttoaddress(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 3 || params.size() > 7)
-        throw runtime_error("sendntp1toaddress <bfxaddress> <amount> <tokenId/tokenName> [NTP1 "
+        throw runtime_error("sendbfxttoaddress <bfxaddress> <amount> <tokenId/tokenName> [BFXT "
                             "metadata=\"\"] [encrypt-meta-data=false] [comment] [comment-to]\n" +
                             HelpRequiringPassphrase());
 
@@ -332,17 +332,17 @@ Value sendntp1toaddress(const Array& params, bool fHelp)
     // Amount
     int64_t nAmount = params[1].get_int64();
 
-    // Get NTP1 wallet
-    boost::shared_ptr<NTP1Wallet> ntp1wallet = boost::make_shared<NTP1Wallet>();
-    ntp1wallet->setRetrieveFullMetadata(false);
-    ntp1wallet->update();
+    // Get BFXT wallet
+    boost::shared_ptr<BFXTWallet> bfxtwallet = boost::make_shared<BFXTWallet>();
+    bfxtwallet->setRetrieveFullMetadata(false);
+    bfxtwallet->update();
 
     // figure out token id from either the id or the name
     std::string tokenId;
     std::string providedId = params[2].get_str();
 
-    const std::unordered_map<std::string, NTP1TokenMetaData> tokenMetadataMap =
-        ntp1wallet->getTokenMetadataMap();
+    const std::unordered_map<std::string, BFXTTokenMetaData> tokenMetadataMap =
+        bfxtwallet->getTokenMetadataMap();
     // token id was not found
     if (tokenMetadataMap.find(providedId) == tokenMetadataMap.end()) {
         int nameCount = 0; // number of tokens that have that name
@@ -365,11 +365,11 @@ Value sendntp1toaddress(const Array& params, bool fHelp)
 
     // Wallet comments
     CWalletTx                 wtx;
-    RawNTP1MetadataBeforeSend ntp1metadata("", false);
+    RawBFXTMetadataBeforeSend bfxtmetadata("", false);
     if (params.size() > 3 && params[3].type() != null_type && !params[3].get_str().empty())
-        ntp1metadata.metadata = params[3].get_str();
+        bfxtmetadata.metadata = params[3].get_str();
     if (params.size() > 4 && params[4].type() != null_type)
-        ntp1metadata.encrypt = params[4].get_bool();
+        bfxtmetadata.encrypt = params[4].get_bool();
     if (params.size() > 5 && params[5].type() != null_type && !params[5].get_str().empty())
         wtx.mapValue["comment"] = params[5].get_str();
     if (params.size() > 6 && params[6].type() != null_type && !params[6].get_str().empty())
@@ -379,45 +379,45 @@ Value sendntp1toaddress(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED,
                            "Error: Please enter the wallet passphrase with walletpassphrase first.");
 
-    string strError = pwalletMain->SendNTP1ToDestination(address.Get(), nAmount, tokenId, wtx,
-                                                         ntp1wallet, ntp1metadata);
+    string strError = pwalletMain->SendBFXTToDestination(address.Get(), nAmount, tokenId, wtx,
+                                                         bfxtwallet, bfxtmetadata);
     if (strError != "")
         throw JSONRPCError(RPC_WALLET_ERROR, strError);
 
     return wtx.GetHash().GetHex();
 }
 
-std::unordered_map<std::string, std::unordered_map<std::string, std::pair<std::string, NTP1Int>>>
-GetNTP1AddressVsTokenBalances()
+std::unordered_map<std::string, std::unordered_map<std::string, std::pair<std::string, BFXTInt>>>
+GetBFXTAddressVsTokenBalances()
 {
-    boost::shared_ptr<NTP1Wallet> ntp1wallet = boost::make_shared<NTP1Wallet>();
-    ntp1wallet->setRetrieveFullMetadata(false);
-    ntp1wallet->update();
+    boost::shared_ptr<BFXTWallet> bfxtwallet = boost::make_shared<BFXTWallet>();
+    bfxtwallet->setRetrieveFullMetadata(false);
+    bfxtwallet->update();
 
     // map<address, map<tokenId, pair<name,balance>>>
-    std::unordered_map<std::string, std::unordered_map<std::string, std::pair<std::string, NTP1Int>>>
+    std::unordered_map<std::string, std::unordered_map<std::string, std::pair<std::string, BFXTInt>>>
         addressBalances;
 
-    const std::unordered_map<NTP1OutPoint, NTP1Transaction>& ntp1outputs =
-        ntp1wallet->getWalletOutputsWithTokens();
+    const std::unordered_map<BFXTOutPoint, BFXTTransaction>& bfxtoutputs =
+        bfxtwallet->getWalletOutputsWithTokens();
 
-    for (const auto& outPair : ntp1outputs) {
-        const NTP1Transaction& ntp1tx  = outPair.second;
-        const NTP1TxOut&       ntp1out = ntp1tx.getTxOut(outPair.first.getIndex());
-        const std::string      addr    = ntp1out.getAddress();
+    for (const auto& outPair : bfxtoutputs) {
+        const BFXTTransaction& bfxttx  = outPair.second;
+        const BFXTTxOut&       bfxtout = bfxttx.getTxOut(outPair.first.getIndex());
+        const std::string      addr    = bfxtout.getAddress();
         if (addr.empty()) {
             continue;
         }
         if (addressBalances.find(addr) == addressBalances.end()) {
-            addressBalances[addr] = std::unordered_map<std::string, std::pair<std::string, NTP1Int>>();
+            addressBalances[addr] = std::unordered_map<std::string, std::pair<std::string, BFXTInt>>();
         }
-        for (int i = 0; i < (int)ntp1out.tokenCount(); i++) {
-            std::string tokenId   = ntp1out.getToken(i).getTokenId();
-            std::string tokenName = ntp1out.getToken(i).getTokenSymbol();
+        for (int i = 0; i < (int)bfxtout.tokenCount(); i++) {
+            std::string tokenId   = bfxtout.getToken(i).getTokenId();
+            std::string tokenName = bfxtout.getToken(i).getTokenSymbol();
             if (addressBalances[addr].find(tokenId) == addressBalances[addr].end()) {
                 addressBalances[addr][tokenId] = std::make_pair(tokenName, 0);
             }
-            addressBalances[addr][tokenId].second += ntp1out.getToken(i).getAmount();
+            addressBalances[addr][tokenId].second += bfxtout.getToken(i).getAmount();
         }
     }
 
@@ -438,8 +438,8 @@ Value listaddressgroupings(const Array& /*params*/, bool fHelp)
                             "made public by common use as inputs or as the resulting change\n"
                             "in past transactions");
 
-    std::unordered_map<std::string, std::unordered_map<std::string, std::pair<std::string, NTP1Int>>>
-        ntp1AddressVsTokenBalances = GetNTP1AddressVsTokenBalances();
+    std::unordered_map<std::string, std::unordered_map<std::string, std::pair<std::string, BFXTInt>>>
+        bfxtAddressVsTokenBalances = GetBFXTAddressVsTokenBalances();
 
     Array                        jsonGroupings;
     map<CTxDestination, int64_t> balances = pwalletMain->GetAddressBalances();
@@ -458,20 +458,20 @@ Value listaddressgroupings(const Array& /*params*/, bool fHelp)
                         pwalletMain->mapAddressBook.find(CBitcoinAddress(address).Get())->second);
                 }
             }
-            // add NTP1 tokens
+            // add BFXT tokens
             {
-                Array ntp1SingleTokenBalance;
-                if (ntp1AddressVsTokenBalances.find(addrStr) != ntp1AddressVsTokenBalances.end()) {
-                    for (const std::pair<std::string, std::pair<std::string, NTP1Int>>& tokenBalance :
-                         ntp1AddressVsTokenBalances[addrStr]) {
+                Array bfxtSingleTokenBalance;
+                if (bfxtAddressVsTokenBalances.find(addrStr) != bfxtAddressVsTokenBalances.end()) {
+                    for (const std::pair<std::string, std::pair<std::string, BFXTInt>>& tokenBalance :
+                         bfxtAddressVsTokenBalances[addrStr]) {
                         Array inner;
                         inner.push_back(tokenBalance.second.first);            // token name
                         inner.push_back(ToString(tokenBalance.second.second)); // balance
                         inner.push_back(tokenBalance.first);                   // token-id
-                        ntp1SingleTokenBalance.push_back(inner);
+                        bfxtSingleTokenBalance.push_back(inner);
                     }
                 }
-                addressInfo.push_back(ntp1SingleTokenBalance);
+                addressInfo.push_back(bfxtSingleTokenBalance);
             }
             jsonGrouping.push_back(addressInfo);
         }
@@ -742,29 +742,29 @@ Value getbalance(const Array& params, bool fHelp)
     return ValueFromAmount(nBalance);
 }
 
-Value getntp1balances(const Array& params, bool fHelp)
+Value getbfxtbalances(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() > 1)
-        throw runtime_error("getntp1balances [minconf=1]\n");
+        throw runtime_error("getbfxtbalances [minconf=1]\n");
 
-    boost::shared_ptr<NTP1Wallet> ntp1wallet = boost::make_shared<NTP1Wallet>();
+    boost::shared_ptr<BFXTWallet> bfxtwallet = boost::make_shared<BFXTWallet>();
 
     int nMinDepth = 0;
     if (params.size() > 0)
         nMinDepth = params[0].get_int();
 
-    ntp1wallet->setRetrieveFullMetadata(false);
-    ntp1wallet->setMinMaxConfirmations(nMinDepth);
-    ntp1wallet->update();
+    bfxtwallet->setRetrieveFullMetadata(false);
+    bfxtwallet->setMinMaxConfirmations(nMinDepth);
+    bfxtwallet->update();
 
-    int tokenCount = ntp1wallet->getNumberOfTokens();
+    int tokenCount = bfxtwallet->getNumberOfTokens();
 
     json_spirit::Object root;
 
     for (int i = 0; i < tokenCount; i++) {
-        std::string tokenId   = ntp1wallet->getTokenId(i);
-        std::string tokenName = ntp1wallet->getTokenName(tokenId);
-        NTP1Int     balance   = ntp1wallet->getTokenBalance(tokenId);
+        std::string tokenId   = bfxtwallet->getTokenId(i);
+        std::string tokenName = bfxtwallet->getTokenName(tokenId);
+        BFXTInt     balance   = bfxtwallet->getTokenBalance(tokenId);
 
         json_spirit::Object tokenJsonData;
         tokenJsonData.push_back(json_spirit::Pair("Name", tokenName));
@@ -777,12 +777,12 @@ Value getntp1balances(const Array& params, bool fHelp)
     return json_spirit::Value(root);
 }
 
-Value getntp1balance(const Array& params, bool fHelp)
+Value getbfxtbalance(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() > 2)
-        throw runtime_error("getntp1balance <tokenId/name> [minconf=1]\n");
+        throw runtime_error("getbfxtbalance <tokenId/name> [minconf=1]\n");
 
-    boost::shared_ptr<NTP1Wallet> ntp1wallet = boost::make_shared<NTP1Wallet>();
+    boost::shared_ptr<BFXTWallet> bfxtwallet = boost::make_shared<BFXTWallet>();
 
     int    nMinDepth = 0;
     string requestedToken;
@@ -795,23 +795,23 @@ Value getntp1balance(const Array& params, bool fHelp)
     std::transform(requestedToken.cbegin(), requestedToken.cend(),
                    std::back_inserter(requestedTokenLowerCase), ::tolower);
 
-    ntp1wallet->setRetrieveFullMetadata(false);
-    ntp1wallet->setMinMaxConfirmations(nMinDepth);
-    ntp1wallet->update();
+    bfxtwallet->setRetrieveFullMetadata(false);
+    bfxtwallet->setMinMaxConfirmations(nMinDepth);
+    bfxtwallet->update();
 
-    int tokenCount = ntp1wallet->getNumberOfTokens();
+    int tokenCount = bfxtwallet->getNumberOfTokens();
 
     json_spirit::Object root;
 
     for (int i = 0; i < tokenCount; i++) {
-        std::string tokenId   = ntp1wallet->getTokenId(i);
-        std::string tokenName = ntp1wallet->getTokenName(tokenId);
+        std::string tokenId   = bfxtwallet->getTokenId(i);
+        std::string tokenName = bfxtwallet->getTokenName(tokenId);
         std::transform(tokenName.begin(), tokenName.end(), tokenName.begin(), ::tolower);
         if (tokenId != requestedToken && tokenName != requestedTokenLowerCase) {
             continue;
         }
 
-        NTP1Int balance = ntp1wallet->getTokenBalance(tokenId);
+        BFXTInt balance = bfxtwallet->getTokenBalance(tokenId);
 
         return json_spirit::Value(ToString(balance));
     }
@@ -924,10 +924,10 @@ Value sendmany(const Array& params, bool fHelp)
     }
     Object sendTo = params[1].get_obj();
 
-    // Get NTP1 wallet
-    boost::shared_ptr<NTP1Wallet> ntp1wallet = boost::make_shared<NTP1Wallet>();
-    ntp1wallet->setRetrieveFullMetadata(false);
-    ntp1wallet->update();
+    // Get BFXT wallet
+    boost::shared_ptr<BFXTWallet> bfxtwallet = boost::make_shared<BFXTWallet>();
+    bfxtwallet->setRetrieveFullMetadata(false);
+    bfxtwallet->update();
 
     CWalletTx wtx;
     if (params.size() > 2 && params[2].type() != null_type && !params[2].get_str().empty())
@@ -957,12 +957,12 @@ Value sendmany(const Array& params, bool fHelp)
     if (totalAmount > nBalance)
         throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
 
-    std::vector<NTP1SendTokensOneRecipientData> ntp1recipients =
-        GetNTP1RecipientsVector(sendTo, ntp1wallet);
+    std::vector<BFXTSendTokensOneRecipientData> bfxtrecipients =
+        GetBFXTRecipientsVector(sendTo, bfxtwallet);
 
-    // initial selection of NTP1 tokens
-    NTP1SendTxData tokenSelector;
-    tokenSelector.selectNTP1Tokens(ntp1wallet, std::vector<COutPoint>(), ntp1recipients, false);
+    // initial selection of BFXT tokens
+    BFXTSendTxData tokenSelector;
+    tokenSelector.selectBFXTTokens(bfxtwallet, std::vector<COutPoint>(), bfxtrecipients, false);
 
     // Send
     CReserveKey keyChange(pwalletMain.get());
@@ -975,14 +975,14 @@ Value sendmany(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_WALLET_ERROR, "Transaction creation failed");
     }
 
-    // verify the NTP1 transaction before commiting
+    // verify the BFXT transaction before commiting
     try {
-        std::vector<std::pair<CTransaction, NTP1Transaction>> inputsTxs =
-            NTP1Transaction::GetAllNTP1InputsOfTx(wtx, false);
-        NTP1Transaction ntp1tx;
-        ntp1tx.readNTP1DataFromTx(wtx, inputsTxs);
+        std::vector<std::pair<CTransaction, BFXTTransaction>> inputsTxs =
+            BFXTTransaction::GetAllBFXTInputsOfTx(wtx, false);
+        BFXTTransaction bfxttx;
+        bfxttx.readBFXTDataFromTx(wtx, inputsTxs);
     } catch (std::exception& ex) {
-        printf("An invalid NTP1 transaction was created; an exception was thrown: %s\n", ex.what());
+        printf("An invalid BFXT transaction was created; an exception was thrown: %s\n", ex.what());
         throw std::runtime_error(
             "Unable to create the transaction. The transaction created would result in an invalid "
             "transaction. Please report your transaction details to the BFX team. The "
@@ -1472,23 +1472,23 @@ Value gettransaction(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 2)
         throw runtime_error(
-            "gettransaction <txid> [ignoreNTP1=false]\n"
-            "Get detailed information about <txid>. Not ignoring NTP1 will try to retireve "
-            "NTP1 data from the database. This won't work if the transaction is not in the blockchain.");
+            "gettransaction <txid> [ignoreBFXT=false]\n"
+            "Get detailed information about <txid>. Not ignoring BFXT will try to retireve "
+            "BFXT data from the database. This won't work if the transaction is not in the blockchain.");
 
     uint256 hash;
     hash.SetHex(params[0].get_str());
 
     Object entry;
 
-    bool fIgnoreNTP1 = false;
+    bool fIgnoreBFXT = false;
     if (params.size() > 1)
-        fIgnoreNTP1 = params[1].get_bool();
+        fIgnoreBFXT = params[1].get_bool();
 
     if (pwalletMain->mapWallet.count(hash)) {
         const CWalletTx& wtx = pwalletMain->mapWallet[hash];
 
-        TxToJSON(wtx, 0, entry, fIgnoreNTP1);
+        TxToJSON(wtx, 0, entry, fIgnoreBFXT);
 
         int64_t nCredit = wtx.GetCredit();
         int64_t nDebit  = wtx.GetDebit();
@@ -1508,7 +1508,7 @@ Value gettransaction(const Array& params, bool fHelp)
         CTransaction tx;
         uint256      hashBlock = 0;
         if (GetTransaction(hash, tx, hashBlock)) {
-            TxToJSON(tx, 0, entry, fIgnoreNTP1);
+            TxToJSON(tx, 0, entry, fIgnoreBFXT);
             if (hashBlock == 0)
                 entry.push_back(Pair("confirmations", 0));
             else {

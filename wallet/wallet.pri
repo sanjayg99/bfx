@@ -77,8 +77,8 @@ HEADERS += qt/bitcoingui.h \
     qt/overviewpage.h \
     qt/ui_overviewpage.h \
     qt/ui_qrcodedialog.h \
-    qt/ntp1summary.h \
-    qt/ui_ntp1summary.h \
+    qt/bfxtsummary.h \
+    qt/ui_bfxtsummary.h \
     qt/ui_sendcoinsdialog.h \
     qt/ui_coincontroldialog.h \
     qt/ui_sendcoinsdialog.h \
@@ -115,29 +115,29 @@ HEADERS += qt/bitcoingui.h \
     bfxreleaseinfo.h \
     curltools.h \
     qt/messageboxwithtimer.h \
-    qt/ntp1/ntp1tokenlistmodel.h \
-    qt/ntp1/ntp1tokenlistfilterproxy.h \
-    ntp1/ntp1tokenmetadata.h \
-    ntp1/ntp1wallet.h \
-    qt/ntp1/ntp1tokenlistitemdelegate.h \
+    qt/bfxt/bfxttokenlistmodel.h \
+    qt/bfxt/bfxttokenlistfilterproxy.h \
+    bfxt/bfxttokenmetadata.h \
+    bfxt/bfxtwallet.h \
+    qt/bfxt/bfxttokenlistitemdelegate.h \
     ThreadSafeHashMap.h \
-    qt/ntp1sendtokensfeewidget.h \
-    ntp1/ntp1script_burn.h \
-    ntp1/ntp1tokenminimalmetadata.h \
-    qt/ntp1/ntp1listelementtokendata.h \
-    ntp1/ntp1sendtxdata.h \
+    qt/bfxtsendtokensfeewidget.h \
+    bfxt/bfxtscript_burn.h \
+    bfxt/bfxttokenminimalmetadata.h \
+    qt/bfxt/bfxtlistelementtokendata.h \
+    bfxt/bfxtsendtxdata.h \
     NetworkForks.h \
-    ntp1/ntp1v1_issuance_static_data.h \
+    bfxt/bfxtv1_issuance_static_data.h \
     qt/json/AbstractTreeNode.h  \
     qt/json/JsonNewNodeDialog.h \
     qt/json/JsonTreeModel.h     \
     qt/json/JsonTreeNode.h      \
     qt/json/JsonTreeView.h      \
-    qt/ntp1/ntp1createmetadatadialog.h \
-    qt/ntp1/ntp1metadatapairwidget.h \
-    qt/ntp1/ntp1custommetadatawidget.h \
-    qt/ntp1/ntp1metadatapairswidget.h \
-    qt/json/NTP1MetadataViewer.h \
+    qt/bfxt/bfxtcreatemetadatadialog.h \
+    qt/bfxt/bfxtmetadatapairwidget.h \
+    qt/bfxt/bfxtcustommetadatawidget.h \
+    qt/bfxt/bfxtmetadatapairswidget.h \
+    qt/json/BFXTMetadataViewer.h \
     SerializationTester.h \
     blockindexcatalog.h   \
     blockindex.h          \
@@ -155,24 +155,24 @@ HEADERS += qt/bitcoingui.h \
     merkletx.h            \
     blocklocator.h        \
     udaddress.h           \
-    qt/ntp1/issuenewntp1tokendialog.h \
+    qt/bfxt/issuenewbfxttokendialog.h \
     crypto_highlevel.h
 
 
 
 HEADERS +=                 \
-    ntp1/ntp1tools.h       \
-    ntp1/ntp1inpoint.h     \
-    ntp1/ntp1outpoint.h    \
-    ntp1/ntp1transaction.h \
-    ntp1/ntp1txin.h        \
-    ntp1/ntp1txout.h       \
-    ntp1/ntp1tokentxdata.h \
-    ntp1/ntp1apicalls.h    \
-    ntp1/ntp1sendtokensonerecipientdata.h \
-    ntp1/ntp1script.h      \
-    ntp1/ntp1script_issuance.h \
-    ntp1/ntp1script_transfer.h
+    bfxt/bfxttools.h       \
+    bfxt/bfxtinpoint.h     \
+    bfxt/bfxtoutpoint.h    \
+    bfxt/bfxttransaction.h \
+    bfxt/bfxttxin.h        \
+    bfxt/bfxttxout.h       \
+    bfxt/bfxttokentxdata.h \
+    bfxt/bfxtapicalls.h    \
+    bfxt/bfxtsendtokensonerecipientdata.h \
+    bfxt/bfxtscript.h      \
+    bfxt/bfxtscript_issuance.h \
+    bfxt/bfxtscript_transfer.h
 
 
 
@@ -229,7 +229,7 @@ SOURCES += qt/bitcoin.cpp \
     rpcblockchain.cpp \
     rpcrawtransaction.cpp \
     qt/overviewpage.cpp \
-    qt/ntp1summary.cpp \
+    qt/bfxtsummary.cpp \
     qt/csvmodelwriter.cpp \
     crypter.cpp \
     qt/sendcoinsentry.cpp \
@@ -268,29 +268,29 @@ SOURCES += qt/bitcoin.cpp \
     bfxreleaseinfo.cpp \
     zerocoin/ZeroTest.cpp \
     curltools.cpp \
-    qt/ntp1/ntp1tokenlistmodel.cpp \
-    qt/ntp1/ntp1tokenlistfilterproxy.cpp \
-    ntp1/ntp1tokenmetadata.cpp \
-    ntp1/ntp1wallet.cpp \
-    qt/ntp1/ntp1tokenlistitemdelegate.cpp \
+    qt/bfxt/bfxttokenlistmodel.cpp \
+    qt/bfxt/bfxttokenlistfilterproxy.cpp \
+    bfxt/bfxttokenmetadata.cpp \
+    bfxt/bfxtwallet.cpp \
+    qt/bfxt/bfxttokenlistitemdelegate.cpp \
     ThreadSafeHashMap.cpp \
-    ntp1/ntp1sendtokensonerecipientdata.cpp \
-    qt/ntp1sendtokensfeewidget.cpp \
-    ntp1/ntp1script_burn.cpp \
-    ntp1/ntp1tokenminimalmetadata.cpp \
-    ntp1/ntp1sendtxdata.cpp \
+    bfxt/bfxtsendtokensonerecipientdata.cpp \
+    qt/bfxtsendtokensfeewidget.cpp \
+    bfxt/bfxtscript_burn.cpp \
+    bfxt/bfxttokenminimalmetadata.cpp \
+    bfxt/bfxtsendtxdata.cpp \
     NetworkForks.cpp \
-    ntp1/ntp1v1_issuance_static_data.cpp \
+    bfxt/bfxtv1_issuance_static_data.cpp \
     qt/json/AbstractTreeNode.cpp  \
     qt/json/JsonNewNodeDialog.cpp \
     qt/json/JsonTreeModel.cpp     \
     qt/json/JsonTreeNode.cpp      \
     qt/json/JsonTreeView.cpp      \
-    qt/json/NTP1MetadataViewer.cpp \
-    qt/ntp1/ntp1createmetadatadialog.cpp \
-    qt/ntp1/ntp1metadatapairwidget.cpp \
-    qt/ntp1/ntp1custommetadatawidget.cpp \
-    qt/ntp1/ntp1metadatapairswidget.cpp \
+    qt/json/BFXTMetadataViewer.cpp \
+    qt/bfxt/bfxtcreatemetadatadialog.cpp \
+    qt/bfxt/bfxtmetadatapairwidget.cpp \
+    qt/bfxt/bfxtcustommetadatawidget.cpp \
+    qt/bfxt/bfxtmetadatapairswidget.cpp \
     SerializationTester.cpp \
     blockindexcatalog.cpp \
     blockindex.cpp        \
@@ -308,22 +308,22 @@ SOURCES += qt/bitcoin.cpp \
     merkletx.cpp          \
     blocklocator.cpp      \
     udaddress.cpp         \
-    qt/ntp1/issuenewntp1tokendialog.cpp \
+    qt/bfxt/issuenewbfxttokendialog.cpp \
     crypto_highlevel.cpp
 
 
 SOURCES +=                   \
-    ntp1/ntp1tools.cpp       \
-    ntp1/ntp1inpoint.cpp     \
-    ntp1/ntp1outpoint.cpp    \
-    ntp1/ntp1transaction.cpp \
-    ntp1/ntp1txin.cpp        \
-    ntp1/ntp1txout.cpp       \
-    ntp1/ntp1tokentxdata.cpp \
-    ntp1/ntp1apicalls.cpp    \
-    ntp1/ntp1script.cpp      \
-    ntp1/ntp1script_issuance.cpp \
-    ntp1/ntp1script_transfer.cpp
+    bfxt/bfxttools.cpp       \
+    bfxt/bfxtinpoint.cpp     \
+    bfxt/bfxtoutpoint.cpp    \
+    bfxt/bfxttransaction.cpp \
+    bfxt/bfxttxin.cpp        \
+    bfxt/bfxttxout.cpp       \
+    bfxt/bfxttokentxdata.cpp \
+    bfxt/bfxtapicalls.cpp    \
+    bfxt/bfxtscript.cpp      \
+    bfxt/bfxtscript_issuance.cpp \
+    bfxt/bfxtscript_transfer.cpp
 
 
 contains(BFX_REST, 1) {

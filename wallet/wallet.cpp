@@ -10,7 +10,7 @@
 #include "crypter.h"
 #include "kernel.h"
 #include "main.h"
-#include "ntp1/ntp1transaction.h"
+#include "bfxt/bfxttransaction.h"
 #include "txdb.h"
 #include "txmempool.h"
 #include "ui_interface.h"
@@ -447,7 +447,7 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn)
         LOCK(cs_wallet);
         // Inserts only if not already there, returns tx inserted or tx found
         pair<map<uint256, CWalletTx>::iterator, bool> ret = mapWallet.insert(make_pair(hash, wtxIn));
-        // update NTP1 transactions
+        // update BFXT transactions
         if (walletNewTxUpdateFunctor) {
             walletNewTxUpdateFunctor->setReferenceBlockHeight();
             walletNewTxUpdateFunctor->run(hash, nBestHeight);
@@ -1151,14 +1151,14 @@ void CWallet::AvailableCoinsForStaking(vector<COutput>& vCoins, unsigned int nSp
             if (nDepth < 1)
                 continue;
 
-            // get NTP1 information of this transaction
-            bool txIsNTP1 = NTP1Transaction::IsTxNTP1(pcoin);
+            // get BFXT information of this transaction
+            bool txIsBFXT = BFXTTransaction::IsTxBFXT(pcoin);
 
             for (unsigned int i = 0; i < pcoin->vout.size(); i++) {
                 if (!(pcoin->IsSpent(i)) && IsMine(pcoin->vout[i]) &&
                     pcoin->vout[i].nValue >= nMinimumInputValue) {
-                    if (txIsNTP1) {
-                        // if this output is an NTP1 output, skip it
+                    if (txIsBFXT) {
+                        // if this output is an BFXT output, skip it
                         try {
                             const CTransaction* tx = dynamic_cast<const CTransaction*>(pcoin);
                             if (tx == nullptr) {
@@ -1166,12 +1166,12 @@ void CWallet::AvailableCoinsForStaking(vector<COutput>& vCoins, unsigned int nSp
                                     "Unable to case transaction: " + pcoin->GetHash().ToString() +
                                     " to CTransaction");
                             }
-                            std::vector<std::pair<CTransaction, NTP1Transaction>> inputs =
-                                NTP1Transaction::GetAllNTP1InputsOfTx(*tx, false);
-                            NTP1Transaction ntp1tx;
-                            ntp1tx.readNTP1DataFromTx(*tx, inputs);
+                            std::vector<std::pair<CTransaction, BFXTTransaction>> inputs =
+                                BFXTTransaction::GetAllBFXTInputsOfTx(*tx, false);
+                            BFXTTransaction bfxttx;
+                            bfxttx.readBFXTDataFromTx(*tx, inputs);
                             // if this output contains tokens, skip it to avoid burning them
-                            if (ntp1tx.getTxOut(i).tokenCount() > 0) {
+                            if (bfxttx.getTxOut(i).tokenCount() > 0) {
                                 continue;
                             }
                         } catch (std::exception& ex) {
@@ -1257,7 +1257,7 @@ int64_t CWallet::GetNewMint() const
 bool CWallet::SelectCoinsMinConf(int64_t nTargetValue, unsigned int nSpendTime, int nConfMine,
                                  int nConfTheirs, vector<COutput> vCoins,
                                  set<pair<const CWalletTx*, unsigned int>>& setCoinsRet,
-                                 int64_t& nValueRet, bool avoidNTP1Outputs) const
+                                 int64_t& nValueRet, bool avoidBFXTOutputs) const
 {
     setCoinsRet.clear();
     nValueRet = 0;
@@ -1279,29 +1279,29 @@ bool CWallet::SelectCoinsMinConf(int64_t nTargetValue, unsigned int nSpendTime, 
 
         int i = output.i;
 
-        if (avoidNTP1Outputs) {
-            // get NTP1 information of this transaction
-            bool txIsNTP1 = NTP1Transaction::IsTxNTP1(pcoin);
+        if (avoidBFXTOutputs) {
+            // get BFXT information of this transaction
+            bool txIsBFXT = BFXTTransaction::IsTxBFXT(pcoin);
 
-            if (txIsNTP1) {
-                // if this output is an NTP1 output, skip it
+            if (txIsBFXT) {
+                // if this output is an BFXT output, skip it
                 try {
                     const CTransaction* tx = dynamic_cast<const CTransaction*>(pcoin);
                     if (tx == nullptr) {
                         throw std::runtime_error("Unable to case transaction: " +
                                                  pcoin->GetHash().ToString() + " to CTransaction");
                     }
-                    std::vector<std::pair<CTransaction, NTP1Transaction>> inputs =
-                        NTP1Transaction::GetAllNTP1InputsOfTx(*tx, false);
-                    NTP1Transaction ntp1tx;
-                    ntp1tx.readNTP1DataFromTx(*tx, inputs);
+                    std::vector<std::pair<CTransaction, BFXTTransaction>> inputs =
+                        BFXTTransaction::GetAllBFXTInputsOfTx(*tx, false);
+                    BFXTTransaction bfxttx;
+                    bfxttx.readBFXTDataFromTx(*tx, inputs);
                     // if this output contains tokens, skip it to avoid burning them
                     assert(i < static_cast<int>(pcoin->vout.size()));
-                    if (ntp1tx.getTxOut(i).tokenCount() > 0) {
+                    if (bfxttx.getTxOut(i).tokenCount() > 0) {
                         continue;
                     }
                 } catch (std::exception& ex) {
-                    printf("Unable to parse script to check whether an output is NTP1; error "
+                    printf("Unable to parse script to check whether an output is BFXT; error "
                            "says: %s",
                            ex.what());
                 }
@@ -1385,7 +1385,7 @@ bool CWallet::SelectCoinsMinConf(int64_t nTargetValue, unsigned int nSpendTime, 
 
 bool CWallet::SelectCoins(int64_t nTargetValue, unsigned int nSpendTime,
                           set<pair<const CWalletTx*, unsigned int>>& setCoinsRet, int64_t& nValueRet,
-                          const CCoinControl* coinControl, bool avoidNTP1Outputs) const
+                          const CCoinControl* coinControl, bool avoidBFXTOutputs) const
 {
     vector<COutput> vCoins;
     AvailableCoins(vCoins, true, coinControl);
@@ -1401,11 +1401,11 @@ bool CWallet::SelectCoins(int64_t nTargetValue, unsigned int nSpendTime,
     }
 
     return (SelectCoinsMinConf(nTargetValue, nSpendTime, 1, 10, vCoins, setCoinsRet, nValueRet,
-                               avoidNTP1Outputs) ||
+                               avoidBFXTOutputs) ||
             SelectCoinsMinConf(nTargetValue, nSpendTime, 1, 1, vCoins, setCoinsRet, nValueRet,
-                               avoidNTP1Outputs) ||
+                               avoidBFXTOutputs) ||
             SelectCoinsMinConf(nTargetValue, nSpendTime, 0, 1, vCoins, setCoinsRet, nValueRet,
-                               avoidNTP1Outputs));
+                               avoidBFXTOutputs));
 }
 
 // Select some coins without random shuffle or best subset approximation
@@ -1446,7 +1446,7 @@ bool CWallet::SelectCoinsForStaking(int64_t nTargetValue, unsigned int nSpendTim
     return true;
 }
 
-void AddCoinsToInputsSet(set<pair<const CWalletTx*, unsigned int>>& setInputs, const NTP1OutPoint& input)
+void AddCoinsToInputsSet(set<pair<const CWalletTx*, unsigned int>>& setInputs, const BFXTOutPoint& input)
 {
     std::vector<COutput> coins;
     pwalletMain->AvailableCoins(coins);
@@ -1469,7 +1469,7 @@ void AddCoinsToInputsSet(set<pair<const CWalletTx*, unsigned int>>& setInputs, c
     }
 }
 
-void CWallet::SetTxNTP1OpRet(CTransaction& wtxNew, const std::shared_ptr<NTP1Script>& script)
+void CWallet::SetTxBFXTOpRet(CTransaction& wtxNew, const std::shared_ptr<BFXTScript>& script)
 {
 
     std::string opRetScriptBin = script->calculateScriptBin();
@@ -1496,55 +1496,55 @@ void CWallet::SetTxNTP1OpRet(CTransaction& wtxNew, const std::shared_ptr<NTP1Scr
     it->scriptPubKey = CScript() << OP_RETURN << ParseHex(opRetScriptHex);
 }
 
-void CWallet::SetTxNTP1OpRet(CTransaction&                                       wtxNew,
-                             const std::vector<NTP1Script::TransferInstruction>& TIs,
-                             const std::string                                   ntp1metadata,
+void CWallet::SetTxBFXTOpRet(CTransaction&                                       wtxNew,
+                             const std::vector<BFXTScript::TransferInstruction>& TIs,
+                             const std::string                                   bfxtmetadata,
                              boost::optional<IssueTokenData>                     issuanceData)
 {
     if (TIs.empty()) {
-        // no OP_RETURN, no NTP1 outputs
+        // no OP_RETURN, no BFXT outputs
         return;
     }
-    for (NTP1Script::TransferInstruction ti : TIs) {
+    for (BFXTScript::TransferInstruction ti : TIs) {
         if (ti.outputIndex > 31) {
             throw std::runtime_error("Invalid output index was reached (" +
                                      std::to_string(ti.outputIndex) +
-                                     "). Output indices in NTP1 cannot exceed 31 or there would be a "
+                                     "). Output indices in BFXT cannot exceed 31 or there would be a "
                                      "risk of burning tokens. Try to use less outputs/recipients.");
         }
     }
     // set the OP_RETURN script
     if (issuanceData.is_initialized()) {
         const IssueTokenData& d = issuanceData.get();
-        auto agg = NTP1Script::IssuanceFlags::AggregationPolicy::AggregationPolicy_Aggregatable;
+        auto agg = BFXTScript::IssuanceFlags::AggregationPolicy::AggregationPolicy_Aggregatable;
 
-        std::shared_ptr<NTP1Script_Issuance> script =
-            NTP1Script_Issuance::CreateScript(d.symbol, d.amount, TIs, ntp1metadata, true, 0, agg);
+        std::shared_ptr<BFXTScript_Issuance> script =
+            BFXTScript_Issuance::CreateScript(d.symbol, d.amount, TIs, bfxtmetadata, true, 0, agg);
 
-        SetTxNTP1OpRet(wtxNew, script);
+        SetTxBFXTOpRet(wtxNew, script);
     } else {
-        std::shared_ptr<NTP1Script_Transfer> script =
-            NTP1Script_Transfer::CreateScript(TIs, ntp1metadata);
+        std::shared_ptr<BFXTScript_Transfer> script =
+            BFXTScript_Transfer::CreateScript(TIs, bfxtmetadata);
 
-        SetTxNTP1OpRet(wtxNew, script);
+        SetTxBFXTOpRet(wtxNew, script);
     }
 }
 
-std::vector<NTP1Script::TransferInstruction>
-CWallet::AddNTP1TokenInputsToTx(CTransaction& wtxNew, const NTP1SendTxData& ntp1TxData,
+std::vector<BFXTScript::TransferInstruction>
+CWallet::AddBFXTTokenInputsToTx(CTransaction& wtxNew, const BFXTSendTxData& bfxtTxData,
                                 const int tokenOutputsOffset)
 {
-    std::vector<NTP1Script::TransferInstruction> TIs;
+    std::vector<BFXTScript::TransferInstruction> TIs;
 
-    std::vector<IntermediaryTI> ntp1IntermediaryTIs = ntp1TxData.getIntermediaryTIs();
-    // because we don't add NTP1 input, its presense in TIs must be subtracted, to make position number i
+    std::vector<IntermediaryTI> bfxtIntermediaryTIs = bfxtTxData.getIntermediaryTIs();
+    // because we don't add BFXT input, its presense in TIs must be subtracted, to make position number i
     // contain token number i, where issued tokens don't exist
     // if no issuance exists, this remains zero
-    int NTP1IssuanceFoundOffset = 0;
+    int BFXTIssuanceFoundOffset = 0;
 
     // loop over inputs and insert them to inputs in order and at the beginning of vin array
-    for (int i = 0; i < (int)ntp1IntermediaryTIs.size(); i++) {
-        auto& iti = ntp1IntermediaryTIs[i];
+    for (int i = 0; i < (int)bfxtIntermediaryTIs.size(); i++) {
+        auto& iti = bfxtIntermediaryTIs[i];
 
         auto inputIt = std::find_if(wtxNew.vin.begin(), wtxNew.vin.end(), [&iti](const CTxIn& Input) {
             return Input.prevout.hash == iti.input.getHash() && Input.prevout.n == iti.input.getIndex();
@@ -1552,23 +1552,23 @@ CWallet::AddNTP1TokenInputsToTx(CTransaction& wtxNew, const NTP1SendTxData& ntp1
         if (inputIt == wtxNew.vin.end()) {
             // if this iti is for issuance, don't add it its input to BFX inputs
             // otherwise this is not issuance, because issuance doesn't have input
-            if (!iti.isNTP1TokenIssuance) {
+            if (!iti.isBFXTTokenIssuance) {
                 // add the input only if it doesn't exist
-                wtxNew.vin.insert(wtxNew.vin.begin() + i - NTP1IssuanceFoundOffset,
+                wtxNew.vin.insert(wtxNew.vin.begin() + i - BFXTIssuanceFoundOffset,
                                   CTxIn(iti.input.getHash(), iti.input.getIndex()));
             } else {
-                assert(NTP1IssuanceFoundOffset == 0);
-                if (NTP1IssuanceFoundOffset > 0) {
+                assert(BFXTIssuanceFoundOffset == 0);
+                if (BFXTIssuanceFoundOffset > 0) {
                     throw std::runtime_error(
                         "Seems like there is an attempt to issue multiple tokens in one transaction.");
                 }
-                NTP1IssuanceFoundOffset = 1;
+                BFXTIssuanceFoundOffset = 1;
             }
         } else {
             // if the input already exists, move it to position i
             CTxIn toMove = *inputIt;
             wtxNew.vin.erase(inputIt);
-            wtxNew.vin.insert(wtxNew.vin.begin() + i - NTP1IssuanceFoundOffset, toMove);
+            wtxNew.vin.insert(wtxNew.vin.begin() + i - BFXTIssuanceFoundOffset, toMove);
         }
 
         // loop over outputs (TIs) that will consume the input
@@ -1577,7 +1577,7 @@ CWallet::AddNTP1TokenInputsToTx(CTransaction& wtxNew, const NTP1SendTxData& ntp1
             if (ti.outputIndex != IntermediaryTI::CHANGE_OUTPUT_FAKE_INDEX) {
                 // the outputs the come from the IntermediaryTI start at zero, but the outputs in reality
                 // are shifted by an offset because there are other outputs that are added by BFX with
-                // only nebls, with no NTP1 tokens in them
+                // only nebls, with no BFXT tokens in them
                 ti.outputIndex += tokenOutputsOffset;
             }
 
@@ -1588,12 +1588,12 @@ CWallet::AddNTP1TokenInputsToTx(CTransaction& wtxNew, const NTP1SendTxData& ntp1
     return TIs;
 }
 
-int CWallet::AddNTP1TokenOutputsToTx(CTransaction& wtxNew, const NTP1SendTxData& ntp1TxData)
+int CWallet::AddBFXTTokenOutputsToTx(CTransaction& wtxNew, const BFXTSendTxData& bfxtTxData)
 {
     // some invalid value
     int opReturnIndex = -10;
 
-    const std::vector<IntermediaryTI>&             ITIs = ntp1TxData.getIntermediaryTIs();
+    const std::vector<IntermediaryTI>&             ITIs = bfxtTxData.getIntermediaryTIs();
     typedef std::vector<IntermediaryTI>::size_type s_t;
     // calculate total number of TIs
     int totalTIs =
@@ -1611,7 +1611,7 @@ int CWallet::AddNTP1TokenOutputsToTx(CTransaction& wtxNew, const NTP1SendTxData&
 
     // create token outputs, basically the output number will be tokenOutputsOffset + i
     // where i is the recipient number in the list
-    for (const auto& r : ntp1TxData.getNTP1TokenRecipientsList()) {
+    for (const auto& r : bfxtTxData.getBFXTTokenRecipientsList()) {
         CScript scriptPubKey;
         scriptPubKey.SetDestination(CBitcoinAddress(r.destination).Get());
         wtxNew.vout.push_back(CTxOut(MIN_TX_FEE, scriptPubKey));
@@ -1620,7 +1620,7 @@ int CWallet::AddNTP1TokenOutputsToTx(CTransaction& wtxNew, const NTP1SendTxData&
     return tokenOutputsOffset;
 }
 
-uint64_t GetTotalNeblsInInputs(const std::vector<NTP1OutPoint>& inputs)
+uint64_t GetTotalNeblsInInputs(const std::vector<BFXTOutPoint>& inputs)
 {
     uint64_t total = 0;
 
@@ -1660,8 +1660,8 @@ void CreateErrorMsg(std::string* errorMsg, const std::string& msg)
 }
 
 bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, CWalletTx& wtxNew,
-                                CReserveKey& reservekey, int64_t& nFeeRet, NTP1SendTxData ntp1TxData,
-                                const RawNTP1MetadataBeforeSend& ntp1metadata, bool isNTP1Issuance,
+                                CReserveKey& reservekey, int64_t& nFeeRet, BFXTSendTxData bfxtTxData,
+                                const RawBFXTMetadataBeforeSend& bfxtmetadata, bool isBFXTIssuance,
                                 const CCoinControl* coinControl, std::string* errorMsg)
 {
     int64_t nValue = 0;
@@ -1673,8 +1673,8 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
         nValue += s.second;
     }
 
-    if ((vecSend.empty() || nValue < 0) && ntp1TxData.getTotalTokensInInputs().size() == 0 &&
-        !isNTP1Issuance) {
+    if ((vecSend.empty() || nValue < 0) && bfxtTxData.getTotalTokensInInputs().size() == 0 &&
+        !isBFXTIssuance) {
         CreateErrorMsg(errorMsg, "Invalid selected inputs/outputs/values for the transaction.");
         return false;
     }
@@ -1705,10 +1705,10 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
                 set<pair<const CWalletTx*, unsigned int>> setCoins;
                 int64_t                                   nValueIn = 0;
                 if (!SelectCoins(nTotalValue, wtxNew.nTime, setCoins, nValueIn, coinControl,
-                                 isNTP1Issuance)) {
+                                 isBFXTIssuance)) {
                     CreateErrorMsg(errorMsg,
                                    "Failed to collect nebls for the transaction. You are "
-                                   "probably trying to spend nebls from NTP1 outputs. NTP1 "
+                                   "probably trying to spend nebls from BFXT outputs. BFXT "
                                    "outputs should have a non-zero amount of nebls. Use coin control to "
                                    "have more control on what outputs to use for your transaction.");
                     return false;
@@ -1719,7 +1719,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
                     dPriority += (double)nCredit * pcoin.first->GetDepthInMainChain();
                 }
 
-                // select NTP1 tokens to determine change (this may be superfluous the first time this is
+                // select BFXT tokens to determine change (this may be superfluous the first time this is
                 // called since it's already called before this whole function, but that's fine; it's
                 // necessary to call this after adding any new inputs to check whether any new inputs
                 // have token change)
@@ -1727,12 +1727,12 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
                     bool takeInputsFromCoinControl =
                         coinControl != nullptr && coinControl->HasSelected();
                     try {
-                        // join both inputs from NTP1SendTxData and setCoins
+                        // join both inputs from BFXTSendTxData and setCoins
                         std::set<COutPoint> inputs;
                         for (const auto s : setCoins) {
                             inputs.insert(COutPoint(s.first->GetHash(), s.second));
                         }
-                        //                        for (const auto s : ntp1TxData.getUsedInputs()) {
+                        //                        for (const auto s : bfxtTxData.getUsedInputs()) {
                         //                            inputs.insert(COutPoint(s.getHash(),
                         //                            s.getIndex()));
                         //                        }
@@ -1742,19 +1742,19 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
                                                        : vector<COutPoint>());
                         inputs.insert(inputsFromCoinControl.begin(), inputsFromCoinControl.end());
 
-                        ntp1TxData.selectNTP1Tokens(
-                            ntp1TxData.getWallet(), std::vector<COutPoint>(inputs.begin(), inputs.end()),
-                            ntp1TxData.getNTP1TokenRecipientsList(), !takeInputsFromCoinControl);
+                        bfxtTxData.selectBFXTTokens(
+                            bfxtTxData.getWallet(), std::vector<COutPoint>(inputs.begin(), inputs.end()),
+                            bfxtTxData.getBFXTTokenRecipientsList(), !takeInputsFromCoinControl);
 
                         // calculate the total nebls in all inputs (the other place where this is
                         // calculated is basically legacy and will be remove in the future)
-                        std::vector<NTP1OutPoint> usedInputs = ntp1TxData.getUsedInputs();
+                        std::vector<BFXTOutPoint> usedInputs = bfxtTxData.getUsedInputs();
 
                         nValueIn = GetTotalNeblsInInputs(usedInputs);
 
                     } catch (std::exception& ex) {
-                        printf("Failed to select NTP1 tokens with error: %s\n", ex.what());
-                        CreateErrorMsg(errorMsg, "Failed to select NTP1 tokens with error: " +
+                        printf("Failed to select BFXT tokens with error: %s\n", ex.what());
+                        CreateErrorMsg(errorMsg, "Failed to select BFXT tokens with error: " +
                                                      std::string(ex.what()));
                         return false;
                     }
@@ -1762,19 +1762,19 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
 
                 int tokenOutputOffset = -1;
 
-                // add NTP1 outputs to tx
+                // add BFXT outputs to tx
                 try {
-                    tokenOutputOffset = AddNTP1TokenOutputsToTx(wtxNew, ntp1TxData);
+                    tokenOutputOffset = AddBFXTTokenOutputsToTx(wtxNew, bfxtTxData);
                 } catch (std::exception& ex) {
-                    printf("Error in CreateTransaction() while adding NTP1 outputs: %s\n", ex.what());
-                    CreateErrorMsg(errorMsg, "Error in CreateTransaction() while adding NTP1 oututs: " +
+                    printf("Error in CreateTransaction() while adding BFXT outputs: %s\n", ex.what());
+                    CreateErrorMsg(errorMsg, "Error in CreateTransaction() while adding BFXT oututs: " +
                                                  std::string(ex.what()));
                     return false;
                 }
 
-                bool ntp1TokenChangeExists = false;
-                if (ntp1TxData.hasNTP1Tokens()) {
-                    ntp1TokenChangeExists = (ntp1TxData.getChangeTokens().size() != 0);
+                bool bfxtTokenChangeExists = false;
+                if (bfxtTxData.hasBFXTTokens()) {
+                    bfxtTokenChangeExists = (bfxtTxData.getChangeTokens().size() != 0);
                 }
 
                 int64_t nChange = nValueIn - nValue - nFeeRet;
@@ -1789,7 +1789,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
 
                 CKeyID changeKeyID;
 
-                if (nChange > 0 || ntp1TokenChangeExists) {
+                if (nChange > 0 || bfxtTokenChangeExists) {
                     // Fill a vout to ourself
                     // TODO: pass in scriptChange instead of reservekey so
                     // change transaction isn't always pay-to-bitcoin-address
@@ -1827,8 +1827,8 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
                     if (nChange > 0) {
                         wtxNew.vout.push_back(CTxOut(nChange, scriptChange));
                     }
-                    // create change for NTP1, if that exists
-                    if (ntp1TokenChangeExists) {
+                    // create change for BFXT, if that exists
+                    if (bfxtTokenChangeExists) {
                         changeOutputIndex = wtxNew.vout.size();
                         wtxNew.vout.push_back(CTxOut(MIN_TX_FEE, scriptChange));
                     }
@@ -1841,15 +1841,15 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
                     wtxNew.vin.push_back(CTxIn(coin.first->GetHash(), coin.second));
                 }
 
-                // add NTP1 inputs to tx
-                std::vector<NTP1Script::TransferInstruction> TIs;
+                // add BFXT inputs to tx
+                std::vector<BFXTScript::TransferInstruction> TIs;
                 try {
-                    TIs = AddNTP1TokenInputsToTx(wtxNew, ntp1TxData, tokenOutputOffset);
-                    for (const auto& iti : ntp1TxData.getIntermediaryTIs()) {
+                    TIs = AddBFXTTokenInputsToTx(wtxNew, bfxtTxData, tokenOutputOffset);
+                    for (const auto& iti : bfxtTxData.getIntermediaryTIs()) {
                         // null input is for issuance, but we don't add it to inputs
                         if (iti.input.isNull()) {
-                            if (!isNTP1Issuance) {
-                                throw std::runtime_error("A null NTP1 input was found, which is not "
+                            if (!isBFXTIssuance) {
+                                throw std::runtime_error("A null BFXT input was found, which is not "
                                                          "valid for Non-issuance transactions.");
                             }
                             continue;
@@ -1857,13 +1857,13 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
                         AddCoinsToInputsSet(setCoins, iti.input);
                     }
                 } catch (std::exception& ex) {
-                    printf("Error in CreateTransaction() while adding NTP1 inputs: %s\n", ex.what());
-                    CreateErrorMsg(errorMsg, "Error in CreateTransaction() while adding NTP1 inputs: " +
+                    printf("Error in CreateTransaction() while adding BFXT inputs: %s\n", ex.what());
+                    CreateErrorMsg(errorMsg, "Error in CreateTransaction() while adding BFXT inputs: " +
                                                  std::string(ex.what()));
                     return false;
                 }
 
-                if (ntp1TokenChangeExists && changeOutputIndex < 0) {
+                if (bfxtTokenChangeExists && changeOutputIndex < 0) {
                     printf("Failed to deduce the OP_RETURN output index in CreateTransaction()\n");
                     CreateErrorMsg(errorMsg,
                                    "Failed to deduce the OP_RETURN output index in CreateTransaction()");
@@ -1875,15 +1875,15 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
                 }
 
                 try {
-                    NTP1SendTxData::FixTIsChangeOutputIndex(TIs, changeOutputIndex);
-                    std::string processedMetadata = ntp1metadata.applyMetadataEncryption(
-                        wtxNew, ntp1TxData.getNTP1TokenRecipientsList());
-                    CWallet::SetTxNTP1OpRet(wtxNew, TIs, processedMetadata,
-                                            ntp1TxData.getNTP1TokenIssuanceData());
+                    BFXTSendTxData::FixTIsChangeOutputIndex(TIs, changeOutputIndex);
+                    std::string processedMetadata = bfxtmetadata.applyMetadataEncryption(
+                        wtxNew, bfxtTxData.getBFXTTokenRecipientsList());
+                    CWallet::SetTxBFXTOpRet(wtxNew, TIs, processedMetadata,
+                                            bfxtTxData.getBFXTTokenIssuanceData());
                 } catch (std::exception& ex) {
-                    printf("Error while setting up NTP1 data: %s\n", ex.what());
+                    printf("Error while setting up BFXT data: %s\n", ex.what());
                     CreateErrorMsg(errorMsg,
-                                   "Error while setting up NTP1 data: " + std::string(ex.what()));
+                                   "Error while setting up BFXT data: " + std::string(ex.what()));
                     return false;
                 }
 
@@ -1920,9 +1920,9 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
                 dPriority /= nBytes;
 
                 // Check that enough fee is included
-                int64_t NTP1Fee = ntp1TxData.getRequiredNeblsForOutputs();
-                int64_t nPayFee = nTransactionFee * (1 + (int64_t)nBytes / 1000) + NTP1Fee;
-                int64_t nMinFee = wtxNew.GetMinFee(1, GMF_SEND, nBytes) + NTP1Fee;
+                int64_t BFXTFee = bfxtTxData.getRequiredNeblsForOutputs();
+                int64_t nPayFee = nTransactionFee * (1 + (int64_t)nBytes / 1000) + BFXTFee;
+                int64_t nMinFee = wtxNew.GetMinFee(1, GMF_SEND, nBytes) + BFXTFee;
 
                 if (nFeeRet < max(nPayFee, nMinFee)) {
                     nFeeRet = max(nPayFee, nMinFee);
@@ -1942,14 +1942,14 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t>>& vecSend, C
 
 bool CWallet::CreateTransaction(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNew,
                                 CReserveKey& reservekey, int64_t& nFeeRet,
-                                const NTP1SendTxData&            ntp1TxData,
-                                const RawNTP1MetadataBeforeSend& ntp1metadata, bool isNTP1Issuance,
+                                const BFXTSendTxData&            bfxtTxData,
+                                const RawBFXTMetadataBeforeSend& bfxtmetadata, bool isBFXTIssuance,
                                 const CCoinControl* coinControl)
 {
     vector<pair<CScript, int64_t>> vecSend;
     vecSend.push_back(make_pair(scriptPubKey, nValue));
-    return CreateTransaction(vecSend, wtxNew, reservekey, nFeeRet, ntp1TxData, ntp1metadata,
-                             isNTP1Issuance, coinControl);
+    return CreateTransaction(vecSend, wtxNew, reservekey, nFeeRet, bfxtTxData, bfxtmetadata,
+                             isBFXTIssuance, coinControl);
 }
 
 // NovaCoin: get current stake weight
@@ -2290,19 +2290,19 @@ string CWallet::SendMoney(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNe
 
     CBitcoinAddress destAddress(dest);
 
-    NTP1SendTokensOneRecipientData ntp1recipient;
-    ntp1recipient.amount      = nValue;
-    ntp1recipient.destination = destAddress.ToString();
-    ntp1recipient.tokenId     = NTP1SendTxData::NEBL_TOKEN_ID;
+    BFXTSendTokensOneRecipientData bfxtrecipient;
+    bfxtrecipient.amount      = nValue;
+    bfxtrecipient.destination = destAddress.ToString();
+    bfxtrecipient.tokenId     = BFXTSendTxData::NEBL_TOKEN_ID;
 
-    std::vector<NTP1SendTokensOneRecipientData> ntp1recipients(1, ntp1recipient);
+    std::vector<BFXTSendTokensOneRecipientData> bfxtrecipients(1, bfxtrecipient);
 
-    boost::shared_ptr<NTP1Wallet> ntp1wallet = boost::make_shared<NTP1Wallet>();
-    ntp1wallet->setRetrieveFullMetadata(false);
-    ntp1wallet->update();
+    boost::shared_ptr<BFXTWallet> bfxtwallet = boost::make_shared<BFXTWallet>();
+    bfxtwallet->setRetrieveFullMetadata(false);
+    bfxtwallet->update();
 
-    NTP1SendTxData tokenSelector;
-    tokenSelector.selectNTP1Tokens(ntp1wallet, vector<COutPoint>(), ntp1recipients, true);
+    BFXTSendTxData tokenSelector;
+    tokenSelector.selectBFXTTokens(bfxtwallet, vector<COutPoint>(), bfxtrecipients, true);
 
     if (!CreateTransaction(scriptPubKey, nValue, wtxNew, reservekey, nFeeRequired, tokenSelector)) {
         string strError;
@@ -2344,10 +2344,10 @@ string CWallet::SendMoneyToDestination(const CTxDestination& address, int64_t nV
     return SendMoney(scriptPubKey, nValue, wtxNew, fAskFee);
 }
 
-string CWallet::SendNTP1ToDestination(const CTxDestination& address, int64_t nValue,
+string CWallet::SendBFXTToDestination(const CTxDestination& address, int64_t nValue,
                                       const std::string& TokenId, CWalletTx& wtxNew,
-                                      boost::shared_ptr<NTP1Wallet>    ntp1wallet,
-                                      const RawNTP1MetadataBeforeSend& ntp1metadata, bool fAskFee)
+                                      boost::shared_ptr<BFXTWallet>    bfxtwallet,
+                                      const RawBFXTMetadataBeforeSend& bfxtmetadata, bool fAskFee)
 {
     // Check amount
     if (nValue <= 0)
@@ -2367,18 +2367,18 @@ string CWallet::SendNTP1ToDestination(const CTxDestination& address, int64_t nVa
         return strError;
     }
 
-    NTP1SendTokensOneRecipientData ntp1recipient;
-    ntp1recipient.amount      = nValue;
-    ntp1recipient.destination = CBitcoinAddress(address).ToString();
-    ntp1recipient.tokenId     = TokenId;
+    BFXTSendTokensOneRecipientData bfxtrecipient;
+    bfxtrecipient.amount      = nValue;
+    bfxtrecipient.destination = CBitcoinAddress(address).ToString();
+    bfxtrecipient.tokenId     = TokenId;
 
-    std::vector<NTP1SendTokensOneRecipientData> ntp1recipients(1, ntp1recipient);
+    std::vector<BFXTSendTokensOneRecipientData> bfxtrecipients(1, bfxtrecipient);
 
-    NTP1SendTxData tokenSelector;
-    tokenSelector.selectNTP1Tokens(ntp1wallet, vector<COutPoint>(), ntp1recipients, true);
+    BFXTSendTxData tokenSelector;
+    tokenSelector.selectBFXTTokens(bfxtwallet, vector<COutPoint>(), bfxtrecipients, true);
 
     if (!CreateTransaction(vector<pair<CScript, int64_t>>(), wtxNew, reservekey, nFeeRequired,
-                           tokenSelector, ntp1metadata)) {
+                           tokenSelector, bfxtmetadata)) {
         string strError;
         if (nValue + nFeeRequired > GetBalance())
             strError =

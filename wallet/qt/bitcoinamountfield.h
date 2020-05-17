@@ -1,8 +1,8 @@
 #ifndef BITCOINFIELD_H
 #define BITCOINFIELD_H
 
-#include "qt/ntp1/ntp1listelementtokendata.h"
-#include "qt/ntp1/ntp1tokenlistmodel.h"
+#include "qt/bfxt/bfxtlistelementtokendata.h"
+#include "qt/bfxt/bfxttokenlistmodel.h"
 #include <QComboBox>
 #include <QToolButton>
 #include <QWidget>
@@ -19,13 +19,13 @@ class BitcoinAmountField : public QWidget
     Q_OBJECT
     Q_PROPERTY(qint64 value READ value WRITE setValue NOTIFY textChanged USER true)
 public:
-    explicit BitcoinAmountField(bool EnableNTP1Tokens, QWidget* parent);
+    explicit BitcoinAmountField(bool EnableBFXTTokens, QWidget* parent);
 
     qint64  value(bool* valid = 0) const;
     void    setValue(qint64 value);
     QString getSelectedTokenId() const;
 
-    bool isNTP1TokenSelected() const;
+    bool isBFXTTokenSelected() const;
 
     /** Mark current value as invalid in UI. */
     void setValid(bool valid);
@@ -63,13 +63,13 @@ private:
     QToolButton*    refreshTokensButton;
     int             currentUnit;
 
-    NTP1TokenListModel*                  tokenListDataModel;
-    std::deque<NTP1ListElementTokenData> tokenKindsList;
+    BFXTTokenListModel*                  tokenListDataModel;
+    std::deque<BFXTListElementTokenData> tokenKindsList;
 
     void    setText(const QString& text);
     QString text() const;
 
-    bool enableNTP1Tokens = false;
+    bool enableBFXTTokens = false;
 
 private slots:
     void unitChanged(int idx);

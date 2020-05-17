@@ -24,7 +24,7 @@
 #include "txindex.h"
 #include "util.h"
 
-class NTP1Transaction;
+class BFXTTransaction;
 class CBigNum;
 class CBlock;
 class CTransaction;
@@ -40,16 +40,16 @@ extern DbSmartPtrType glob_db_main;
 extern DbSmartPtrType glob_db_blockIndex;
 extern DbSmartPtrType glob_db_blocks;
 extern DbSmartPtrType glob_db_tx;
-extern DbSmartPtrType glob_db_ntp1Tx;
-extern DbSmartPtrType glob_db_ntp1tokenNames;
+extern DbSmartPtrType glob_db_bfxtTx;
+extern DbSmartPtrType glob_db_bfxttokenNames;
 extern DbSmartPtrType glob_db_addrsVsPubKeys;
 
 const std::string LMDB_MAINDB           = "MainDb";
 const std::string LMDB_BLOCKINDEXDB     = "BlockIndexDb";
 const std::string LMDB_BLOCKSDB         = "BlocksDb";
 const std::string LMDB_TXDB             = "TxDb";
-const std::string LMDB_NTP1TXDB         = "Ntp1txDb";
-const std::string LMDB_NTP1TOKENNAMESDB = "Ntp1NamesDb";
+const std::string LMDB_BFXTTXDB         = "Ntp1txDb";
+const std::string LMDB_BFXTTOKENNAMESDB = "Ntp1NamesDb";
 const std::string LMDB_ADDRSVSPUBKEYSDB = "AddrsVsPubKeysDb";
 
 constexpr static float DB_RESIZE_PERCENT = 0.9f;
@@ -229,8 +229,8 @@ private:
     MDB_dbi* db_blockIndex;
     MDB_dbi* db_blocks;
     MDB_dbi* db_tx;
-    MDB_dbi* db_ntp1Tx;
-    MDB_dbi* db_ntp1tokenNames;
+    MDB_dbi* db_bfxtTx;
+    MDB_dbi* db_bfxttokenNames;
     MDB_dbi* db_addrsVsPubKeys;
 
     // A batch stores up writes and deletes for atomic application. When this
@@ -717,16 +717,16 @@ public:
     bool ReadTxIndex(uint256 hash, CTxIndex& txindex);
     bool UpdateTxIndex(uint256 hash, const CTxIndex& txindex);
     bool ReadTx(const CDiskTxPos& txPos, CTransaction& tx);
-    bool ReadNTP1Tx(uint256 hash, NTP1Transaction& ntp1tx);
-    bool WriteNTP1Tx(uint256 hash, const NTP1Transaction& ntp1tx);
+    bool ReadBFXTTx(uint256 hash, BFXTTransaction& bfxttx);
+    bool WriteBFXTTx(uint256 hash, const BFXTTransaction& bfxttx);
     bool ReadAllIssuanceTxs(std::vector<uint256>& txs);
-    bool ReadNTP1TxsWithTokenSymbol(const std::string& tokenName, std::vector<uint256>& txs);
-    bool WriteNTP1TxWithTokenSymbol(const std::string& tokenName, const NTP1Transaction& tx);
+    bool ReadBFXTTxsWithTokenSymbol(const std::string& tokenName, std::vector<uint256>& txs);
+    bool WriteBFXTTxWithTokenSymbol(const std::string& tokenName, const BFXTTransaction& tx);
     bool ReadAddressPubKey(const CBitcoinAddress& address, std::vector<uint8_t>& pubkey);
     bool WriteAddressPubKey(const CBitcoinAddress& address, const std::vector<uint8_t>& pubkey);
     bool EraseTxIndex(const CTransaction& tx);
     bool ContainsTx(uint256 hash);
-    bool ContainsNTP1Tx(uint256 hash);
+    bool ContainsBFXTTx(uint256 hash);
     bool ReadDiskTx(uint256 hash, CTransaction& tx, CTxIndex& txindex);
     bool ReadDiskTx(uint256 hash, CTransaction& tx);
     bool ReadDiskTx(COutPoint outpoint, CTransaction& tx, CTxIndex& txindex);
@@ -760,8 +760,8 @@ void CTxDB::loadDbPointers()
     db_blockIndex     = glob_db_blockIndex.get();
     db_blocks         = glob_db_blocks.get();
     db_tx             = glob_db_tx.get();
-    db_ntp1Tx         = glob_db_ntp1Tx.get();
-    db_ntp1tokenNames = glob_db_ntp1tokenNames.get();
+    db_bfxtTx         = glob_db_bfxtTx.get();
+    db_bfxttokenNames = glob_db_bfxttokenNames.get();
     db_addrsVsPubKeys = glob_db_addrsVsPubKeys.get();
 }
 
@@ -771,8 +771,8 @@ void CTxDB::resetDbPointers()
     db_blockIndex     = nullptr;
     db_blocks         = nullptr;
     db_tx             = nullptr;
-    db_ntp1Tx         = nullptr;
-    db_ntp1tokenNames = nullptr;
+    db_bfxtTx         = nullptr;
+    db_bfxttokenNames = nullptr;
     db_addrsVsPubKeys = nullptr;
 }
 
@@ -782,8 +782,8 @@ void CTxDB::resetGlobalDbPointers()
     glob_db_blockIndex.reset();
     glob_db_blocks.reset();
     glob_db_tx.reset();
-    glob_db_ntp1Tx.reset();
-    glob_db_ntp1tokenNames.reset();
+    glob_db_bfxtTx.reset();
+    glob_db_bfxttokenNames.reset();
     glob_db_addrsVsPubKeys.reset();
 
     dbEnv.reset();

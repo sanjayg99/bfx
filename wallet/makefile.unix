@@ -218,24 +218,24 @@ OBJS= \
     obj/json/json_spirit_reader.o             \
     obj/json/json_spirit_value.o              \
     obj/json/json_spirit_writer.o             \
-    obj/ntp1/ntp1apicalls.o                   \
-    obj/ntp1/ntp1inpoint.o                    \
-    obj/ntp1/ntp1outpoint.o                   \
-    obj/ntp1/ntp1script_burn.o                \
-    obj/ntp1/ntp1script.o                     \
-    obj/ntp1/ntp1script_issuance.o            \
-    obj/ntp1/ntp1script_transfer.o            \
-    obj/ntp1/ntp1sendtokensonerecipientdata.o \
-    obj/ntp1/ntp1tokenmetadata.o              \
-    obj/ntp1/ntp1tokenminimalmetadata.o       \
-    obj/ntp1/ntp1tokentxdata.o                \
-    obj/ntp1/ntp1tools.o                      \
-    obj/ntp1/ntp1transaction.o                \
-    obj/ntp1/ntp1txin.o                       \
-    obj/ntp1/ntp1txout.o                      \
-    obj/ntp1/ntp1sendtxdata.o                 \
-    obj/ntp1/ntp1wallet.o                     \
-    obj/ntp1/ntp1v1_issuance_static_data.o    \
+    obj/bfxt/bfxtapicalls.o                   \
+    obj/bfxt/bfxtinpoint.o                    \
+    obj/bfxt/bfxtoutpoint.o                   \
+    obj/bfxt/bfxtscript_burn.o                \
+    obj/bfxt/bfxtscript.o                     \
+    obj/bfxt/bfxtscript_issuance.o            \
+    obj/bfxt/bfxtscript_transfer.o            \
+    obj/bfxt/bfxtsendtokensonerecipientdata.o \
+    obj/bfxt/bfxttokenmetadata.o              \
+    obj/bfxt/bfxttokenminimalmetadata.o       \
+    obj/bfxt/bfxttokentxdata.o                \
+    obj/bfxt/bfxttools.o                      \
+    obj/bfxt/bfxttransaction.o                \
+    obj/bfxt/bfxttxin.o                       \
+    obj/bfxt/bfxttxout.o                      \
+    obj/bfxt/bfxtsendtxdata.o                 \
+    obj/bfxt/bfxtwallet.o                     \
+    obj/bfxt/bfxtv1_issuance_static_data.o    \
     obj/udaddress.o                           \
     obj/crypto_highlevel.o
 
@@ -281,8 +281,8 @@ obj/%.o: %.cpp
 	      -e '/^$$/ d' -e 's/$$/ :/' < $(@:%.o=%.d) >> $(@:%.o=%.P); \
 	  rm -f $(@:%.o=%.d)
 
-obj/ntp1/%.o: ntp1/%.cpp
-	${MKDIR_P} obj/ntp1 obj/json
+obj/bfxt/%.o: bfxt/%.cpp
+	${MKDIR_P} obj/bfxt obj/json
 	$(CXX) -c $(xCXXFLAGS) -MMD -MF $(@:%.o=%.d) -o $@ $<
 	@cp $(@:%.o=%.d) $(@:%.o=%.P); \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -319,12 +319,12 @@ clean:
 	-rm -f obj/*.o
 	-rm -f obj-test/*.o
 	-rm -f obj/zerocoin/*.o
-	-rm -f obj/ntp1/*.o
+	-rm -f obj/bfxt/*.o
 	-rm -f obj/json/*.o
 	-rm -f obj/*.P
 	-rm -f obj-test/*.P
 	-rm -f obj/zerocoin/*.P
-	-rm -f obj/ntp1/*.P
+	-rm -f obj/bfxt/*.P
 	-rm -f obj/json/*.P
 	-rm -f obj/build.h
 	-rm -rf obj

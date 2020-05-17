@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include "ntp1/ntp1transaction.h"
+#include "bfxt/bfxttransaction.h"
 #include "uint256.h"
 
 #include <QList>
@@ -83,24 +83,24 @@ public:
         3; /** Number of confirmation recommended for accepting a transaction */
 
     TransactionRecord()
-        : hash(), time(0), type(Other), address(""), debit(0), credit(0), idx(0), ntp1DataLoaded(false),
-          ntp1DataLoadError(false)
+        : hash(), time(0), type(Other), address(""), debit(0), credit(0), idx(0), bfxtDataLoaded(false),
+          bfxtDataLoadError(false)
     {
     }
 
     TransactionRecord(uint256 hash, int64_t time)
         : hash(hash), time(time), type(Other), address(""), debit(0), credit(0), idx(0),
-          ntp1DataLoaded(false), ntp1DataLoadError(false)
+          bfxtDataLoaded(false), bfxtDataLoadError(false)
     {
-        readNTP1TxData();
+        readBFXTTxData();
     }
 
     TransactionRecord(uint256 hash, int64_t time, Type type, const std::string& address, int64_t debit,
                       int64_t credit)
         : hash(hash), time(time), type(type), address(address), debit(debit), credit(credit), idx(0),
-          ntp1DataLoaded(false), ntp1DataLoadError(false)
+          bfxtDataLoaded(false), bfxtDataLoadError(false)
     {
-        readNTP1TxData();
+        readBFXTTxData();
     }
 
     /** Decompose CWallet transaction to model transaction records.
@@ -117,16 +117,16 @@ public:
     qint64          debit;
     qint64          credit;
     CTransaction    tx;
-    NTP1Transaction ntp1tx;
+    BFXTTransaction bfxttx;
     /**@}*/
 
-    void readNTP1TxData();
+    void readBFXTTxData();
 
     /** Subtransaction index, for sort key */
     int idx;
 
-    bool ntp1DataLoaded;
-    bool ntp1DataLoadError;
+    bool bfxtDataLoaded;
+    bool bfxtDataLoadError;
 
     /** Status: can change with block chain update */
     TransactionStatus status;

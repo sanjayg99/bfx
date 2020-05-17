@@ -7,7 +7,7 @@
 #include <QModelIndex>
 
 #include "init.h"
-#include "ntp1/ntp1script.h"
+#include "bfxt/bfxtscript.h"
 #include "qt/json/JsonTreeNode.h"
 
 void TransactionDescDialog::setMetadata(const QString& metadataStr)
@@ -37,7 +37,7 @@ TransactionDescDialog::TransactionDescDialog(const QModelIndex& idx, QWidget* pa
 {
     ui->setupUi(this);
     QString desc     = idx.data(TransactionTableModel::LongDescriptionRole).toString();
-    QString metadata = idx.data(TransactionTableModel::NTP1MetadataRole).toString();
+    QString metadata = idx.data(TransactionTableModel::BFXTMetadataRole).toString();
     setMetadata(metadata);
     ui->detailText->setHtml(desc);
     connect(ui->switchJsonTreeTextButton, &QPushButton::clicked, this,

@@ -61,7 +61,7 @@ private:
     QPushButton*         NTPWarning_noButton;
 
 private slots:
-    void slot_clearNTP1DataCache();
+    void slot_clearBFXTDataCache();
     void slot_enableRescanOnNextRestart();
     void slot_enableResyncOnNextRestart();
 };

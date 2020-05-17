@@ -482,7 +482,7 @@ add_library(ui_lib STATIC
     wallet/qt/ui_askpassphrasedialog.h
     wallet/qt/ui_coincontroldialog.h
     wallet/qt/ui_editaddressdialog.h
-    wallet/qt/ui_ntp1summary.h
+    wallet/qt/ui_bfxtsummary.h
     wallet/qt/ui_optionsdialog.h
     wallet/qt/ui_overviewpage.h
     wallet/qt/ui_qrcodedialog.h
@@ -498,26 +498,26 @@ target_link_libraries(ui_lib
     Qt5::Widgets
     )
 
-add_library(ntp1_gui_lib STATIC
-    wallet/qt/ntp1summary.cpp
-    wallet/qt/ntp1/ntp1tokenlistmodel.cpp
-    wallet/qt/ntp1/ntp1tokenlistfilterproxy.cpp
-    wallet/qt/ntp1/ntp1tokenlistitemdelegate.cpp
-    wallet/qt/ntp1/ntp1createmetadatadialog.cpp
-    wallet/qt/ntp1/ntp1metadatapairwidget.cpp
-    wallet/qt/ntp1/ntp1custommetadatawidget.cpp
-    wallet/qt/ntp1/ntp1metadatapairswidget.cpp
-    wallet/qt/ntp1sendtokensfeewidget.cpp
+add_library(bfxt_gui_lib STATIC
+    wallet/qt/bfxtsummary.cpp
+    wallet/qt/bfxt/bfxttokenlistmodel.cpp
+    wallet/qt/bfxt/bfxttokenlistfilterproxy.cpp
+    wallet/qt/bfxt/bfxttokenlistitemdelegate.cpp
+    wallet/qt/bfxt/bfxtcreatemetadatadialog.cpp
+    wallet/qt/bfxt/bfxtmetadatapairwidget.cpp
+    wallet/qt/bfxt/bfxtcustommetadatawidget.cpp
+    wallet/qt/bfxt/bfxtmetadatapairswidget.cpp
+    wallet/qt/bfxtsendtokensfeewidget.cpp
     wallet/qt/json/AbstractTreeNode.cpp
     wallet/qt/json/JsonNewNodeDialog.cpp
     wallet/qt/json/JsonTreeModel.cpp
     wallet/qt/json/JsonTreeNode.cpp
     wallet/qt/json/JsonTreeView.cpp
-    wallet/qt/json/NTP1MetadataViewer.cpp
-    wallet/qt/ntp1/issuenewntp1tokendialog.cpp
+    wallet/qt/json/BFXTMetadataViewer.cpp
+    wallet/qt/bfxt/issuenewbfxttokendialog.cpp
     )
 
-target_link_libraries(ntp1_gui_lib
+target_link_libraries(bfxt_gui_lib
     Qt5::Core
     Qt5::Widgets
     ui_lib
@@ -585,7 +585,7 @@ add_library(core_lib STATIC
     )
 
 target_link_libraries(core_lib
-    ntp1_lib
+    bfxt_lib
     curltools_lib
     sodium
     )
@@ -614,28 +614,28 @@ add_library(zerocoin_lib STATIC
     wallet/zerocoin/ZeroTest.cpp
     )
 
-add_library(ntp1_lib STATIC
-    wallet/ntp1/ntp1sendtokensonerecipientdata.cpp
-    wallet/ntp1/ntp1script_burn.cpp
-    wallet/ntp1/ntp1tokenminimalmetadata.cpp
-    wallet/ntp1/ntp1sendtxdata.cpp
-    wallet/ntp1/ntp1tokenmetadata.cpp
-    wallet/ntp1/ntp1wallet.cpp
-    wallet/ntp1/ntp1tools.cpp
-    wallet/ntp1/ntp1inpoint.cpp
-    wallet/ntp1/ntp1outpoint.cpp
-    wallet/ntp1/ntp1transaction.cpp
-    wallet/ntp1/ntp1txin.cpp
-    wallet/ntp1/ntp1txout.cpp
-    wallet/ntp1/ntp1tokentxdata.cpp
-    wallet/ntp1/ntp1apicalls.cpp
-    wallet/ntp1/ntp1script.cpp
-    wallet/ntp1/ntp1script_issuance.cpp
-    wallet/ntp1/ntp1script_transfer.cpp
-    wallet/ntp1/ntp1v1_issuance_static_data.cpp
+add_library(bfxt_lib STATIC
+    wallet/bfxt/bfxtsendtokensonerecipientdata.cpp
+    wallet/bfxt/bfxtscript_burn.cpp
+    wallet/bfxt/bfxttokenminimalmetadata.cpp
+    wallet/bfxt/bfxtsendtxdata.cpp
+    wallet/bfxt/bfxttokenmetadata.cpp
+    wallet/bfxt/bfxtwallet.cpp
+    wallet/bfxt/bfxttools.cpp
+    wallet/bfxt/bfxtinpoint.cpp
+    wallet/bfxt/bfxtoutpoint.cpp
+    wallet/bfxt/bfxttransaction.cpp
+    wallet/bfxt/bfxttxin.cpp
+    wallet/bfxt/bfxttxout.cpp
+    wallet/bfxt/bfxttokentxdata.cpp
+    wallet/bfxt/bfxtapicalls.cpp
+    wallet/bfxt/bfxtscript.cpp
+    wallet/bfxt/bfxtscript_issuance.cpp
+    wallet/bfxt/bfxtscript_transfer.cpp
+    wallet/bfxt/bfxtv1_issuance_static_data.cpp
     )
 
-target_link_libraries(ntp1_lib
+target_link_libraries(bfxt_lib
     curltools_lib
     )
 
@@ -668,7 +668,7 @@ target_link_libraries(curltools_lib
 include_directories(wallet)
 include_directories(wallet/json)
 target_include_directories(gui_lib PRIVATE wallet/qt)
-target_include_directories(ntp1_gui_lib PRIVATE wallet/qt)
+target_include_directories(bfxt_gui_lib PRIVATE wallet/qt)
 
 include_directories(${ZLIB_INCLUDE_DIRS})
 
@@ -705,10 +705,10 @@ if(WIN32)
         target_link_libraries(bfx-qt
             gui_lib
             ui_lib
-            ntp1_gui_lib
+            bfxt_gui_lib
             curltools_lib
             zerocoin_lib
-            ntp1_lib
+            bfxt_lib
             core_lib
             json_spirit_lib
             txdb_lib
@@ -744,7 +744,7 @@ if(WIN32)
         target_link_libraries(bfxd
             core_lib
             zerocoin_lib
-            ntp1_lib
+            bfxt_lib
             curltools_lib
             json_spirit_lib
             txdb_lib
@@ -782,10 +782,10 @@ else()
         target_link_libraries(bfx-qt
             gui_lib
             ui_lib
-            ntp1_gui_lib
+            bfxt_gui_lib
             curltools_lib
             zerocoin_lib
-            ntp1_lib
+            bfxt_lib
             core_lib
             json_spirit_lib
             txdb_lib
@@ -819,7 +819,7 @@ else()
         target_link_libraries(bfxd
             core_lib
             zerocoin_lib
-            ntp1_lib
+            bfxt_lib
             curltools_lib
             json_spirit_lib
             txdb_lib

@@ -57,9 +57,9 @@ class CNode;
 
 class CTxMemPool;
 
-// this prevents attempting to recover NTP1 transactions again and again recursively
+// this prevents attempting to recover BFXT transactions again and again recursively
 // once a tx is on this list, it won't be recovered
-extern std::set<uint256> UnrecoverableNTP1Txs;
+extern std::set<uint256> UnrecoverableBFXTTxs;
 
 inline int64_t PastDrift(int64_t nTime) { return nTime - 10 * 60; }   // up to 10 minutes from the past
 inline int64_t FutureDrift(int64_t nTime) { return nTime + 10 * 60; } // up to 10 minutes in the future
@@ -96,7 +96,7 @@ extern unsigned int nDerivationMethodIndex;
 
 extern bool fEnforceCanonical;
 
-class NTP1Transaction;
+class BFXTTransaction;
 
 // Minimum disk space required - used in CheckDiskSpace()
 static const std::uintmax_t nMinDiskSpace = 52428800;
@@ -136,29 +136,29 @@ void               ResendWalletTransactions(bool fForce = false);
 void SetBestChain(const CBlockLocator& loc);
 void UpdatedTransaction(const uint256& hashTx);
 
-/** given a bfx tx, get the corresponding NTP1 tx */
-void FetchNTP1TxFromDisk(std::pair<CTransaction, NTP1Transaction>& txPair, CTxDB& txdb,
+/** given a bfx tx, get the corresponding BFXT tx */
+void FetchBFXTTxFromDisk(std::pair<CTransaction, BFXTTransaction>& txPair, CTxDB& txdb,
                          bool recoverProtection, unsigned recurseDepth = 0);
-void WriteNTP1TxToDbAndDisk(const NTP1Transaction& ntp1tx, CTxDB& txdb);
+void WriteBFXTTxToDbAndDisk(const BFXTTransaction& bfxttx, CTxDB& txdb);
 
-void WriteNTP1TxToDiskFromRawTx(const CTransaction& tx, CTxDB& txdb);
+void WriteBFXTTxToDiskFromRawTx(const CTransaction& tx, CTxDB& txdb);
 
 void AssertIssuanceUniquenessInBlock(
     std::unordered_map<std::string, uint256>& issuedTokensSymbolsInThisBlock, CTxDB& txdb,
     const CTransaction&                                                             tx,
-    const std::map<uint256, std::vector<std::pair<CTransaction, NTP1Transaction>>>& mapQueuedNTP1Inputs,
+    const std::map<uint256, std::vector<std::pair<CTransaction, BFXTTransaction>>>& mapQueuedBFXTInputs,
     const std::map<uint256, CTxIndex>&                                              queuedAcceptedTxs);
 
-void WriteNTP1BlockTransactionsToDisk(const std::vector<CTransaction>& vtx, CTxDB& txdb);
+void WriteBFXTBlockTransactionsToDisk(const std::vector<CTransaction>& vtx, CTxDB& txdb);
 
 /// create a fake tx position that helps in marking an output as spent
 CDiskTxPos CreateFakeSpentTxPos(const uint256& blockhash);
 
 /** blacklisted tokens are tokens that are to be ignored and not used for historical reasons */
-bool IsIssuedTokenBlacklisted(std::pair<CTransaction, NTP1Transaction>& txPair);
+bool IsIssuedTokenBlacklisted(std::pair<CTransaction, BFXTTransaction>& txPair);
 
-void AssertNTP1TokenNameIsNotAlreadyInMainChain(std::string sym, const uint256& txHash, CTxDB& txdb);
-void AssertNTP1TokenNameIsNotAlreadyInMainChain(const NTP1Transaction& ntp1tx, CTxDB& txdb);
+void AssertBFXTTokenNameIsNotAlreadyInMainChain(std::string sym, const uint256& txHash, CTxDB& txdb);
+void AssertBFXTTokenNameIsNotAlreadyInMainChain(const BFXTTransaction& bfxttx, CTxDB& txdb);
 
 /** this function solves the problem of blocks having inputs from the same block. To process transactions
  * in such a situation (or always, to be safe), first we pop the transactions from the leaves (the
@@ -177,9 +177,9 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction& tx, bool* pfMissingInput
 
 bool EnableEnforceUniqueTokenSymbols();
 
-/** the condition for the first valid NTP1 transaction; transactions before this point are invalid in the
+/** the condition for the first valid BFXT transaction; transactions before this point are invalid in the
  * network*/
-bool PassedFirstValidNTP1Tx(const int bestHeight, const bool isTestnet);
+bool PassedFirstValidBFXTTx(const int bestHeight, const bool isTestnet);
 
 /** Maximum size of a block */
 unsigned int MaxBlockSize();

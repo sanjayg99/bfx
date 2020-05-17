@@ -1,6 +1,6 @@
 #include "bitcoinamountfield.h"
 #include "bitcoinunits.h"
-#include "ntp1/ntp1listelementtokendata.h"
+#include "bfxt/bfxtlistelementtokendata.h"
 #include "qvaluecombobox.h"
 
 #include "guiconstants.h"
@@ -15,10 +15,10 @@
 #include <QRegExpValidator>
 #include <qmath.h>
 
-BitcoinAmountField::BitcoinAmountField(bool EnableNTP1Tokens, QWidget* parent)
+BitcoinAmountField::BitcoinAmountField(bool EnableBFXTTokens, QWidget* parent)
     : QWidget(parent), amount(0), currentUnit(-1)
 {
-    enableNTP1Tokens = EnableNTP1Tokens;
+    enableBFXTTokens = EnableBFXTTokens;
 
     amount = new QDoubleSpinBox(this);
     amount->setLocale(QLocale::c());
@@ -35,7 +35,7 @@ BitcoinAmountField::BitcoinAmountField(bool EnableNTP1Tokens, QWidget* parent)
     //    layout->addStretch(1);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    if (enableNTP1Tokens) {
+    if (enableBFXTTokens) {
         tokenKindsComboBox = new QComboBox;
         tokenKindsComboBox->addItem(QIcon(QStringLiteral(":/icons/bitcoin")), "BFX");
         layout->addWidget(tokenKindsComboBox);
@@ -62,7 +62,7 @@ BitcoinAmountField::BitcoinAmountField(bool EnableNTP1Tokens, QWidget* parent)
     // If one if the widgets changes, the combined content changes as well
     connect(amount, SIGNAL(valueChanged(QString)), this, SIGNAL(textChanged()));
     connect(unit, SIGNAL(currentIndexChanged(int)), this, SLOT(unitChanged(int)));
-    if (enableNTP1Tokens) {
+    if (enableBFXTTokens) {
         connect(tokenKindsComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(unitChanged(int)));
     }
 
@@ -82,7 +82,7 @@ void BitcoinAmountField::clear()
 {
     amount->clear();
     unit->setCurrentIndex(0);
-    if (enableNTP1Tokens) {
+    if (enableBFXTTokens) {
         tokenKindsComboBox->setCurrentIndex(0);
         slot_updateTokensList();
     }
@@ -119,22 +119,22 @@ QString BitcoinAmountField::text() const
 
 void BitcoinAmountField::slot_updateTokensList()
 {
-    if (enableNTP1Tokens) {
-        boost::shared_ptr<NTP1Wallet> wallet;
-        if (ntp1TokenListModelInstance.load()) {
-            wallet = ntp1TokenListModelInstance.load()->getCurrentWallet();
+    if (enableBFXTTokens) {
+        boost::shared_ptr<BFXTWallet> wallet;
+        if (bfxtTokenListModelInstance.load()) {
+            wallet = bfxtTokenListModelInstance.load()->getCurrentWallet();
         }
 
         // update the internal list
         tokenKindsList.clear();
         for (long i = 0; i < wallet->getNumberOfTokens(); i++) {
-            NTP1ListElementTokenData d;
+            BFXTListElementTokenData d;
             d.fill(i, wallet);
             tokenKindsList.push_back(d);
         }
 
         std::sort(tokenKindsList.begin(), tokenKindsList.end(),
-                  [](const NTP1ListElementTokenData& k1, const NTP1ListElementTokenData& k2) {
+                  [](const BFXTListElementTokenData& k1, const BFXTListElementTokenData& k2) {
                       return k1.name < k2.name;
                   });
 
@@ -152,9 +152,9 @@ void BitcoinAmountField::slot_updateTokensList()
 
 void BitcoinAmountField::slot_tokenChanged()
 {
-    if (enableNTP1Tokens && tokenKindsComboBox->count() > 0) {
+    if (enableBFXTTokens && tokenKindsComboBox->count() > 0) {
         unit->setEnabled(tokenKindsComboBox->currentIndex() == 0);
-        if (isNTP1TokenSelected()) {
+        if (isBFXTTokenSelected()) {
             amount->setSingleStep(1);
         } else {
             amount->setSingleStep(0.001);
@@ -203,10 +203,10 @@ void BitcoinAmountField::setValue(qint64 value) { setText(BitcoinUnits::format(c
 
 QString BitcoinAmountField::getSelectedTokenId() const
 {
-    if (enableNTP1Tokens && tokenKindsComboBox->count() > 0) {
+    if (enableBFXTTokens && tokenKindsComboBox->count() > 0) {
         int selectedIndex = tokenKindsComboBox->currentIndex();
         if (selectedIndex == 0) {
-            return QString::fromStdString(NTP1SendTxData::NEBL_TOKEN_ID);
+            return QString::fromStdString(BFXTSendTxData::NEBL_TOKEN_ID);
         } else {
             return tokenKindsList.at(selectedIndex - 1).tokenId; // element 0 is BFX
         }
@@ -214,9 +214,9 @@ QString BitcoinAmountField::getSelectedTokenId() const
     return "";
 }
 
-bool BitcoinAmountField::isNTP1TokenSelected() const
+bool BitcoinAmountField::isBFXTTokenSelected() const
 {
-    return (enableNTP1Tokens && tokenKindsComboBox->currentIndex() != 0);
+    return (enableBFXTTokens && tokenKindsComboBox->currentIndex() != 0);
 }
 
 void BitcoinAmountField::unitChanged(int idx)
@@ -226,10 +226,10 @@ void BitcoinAmountField::unitChanged(int idx)
 
     // Determine new unit ID
     int newUnit = 0;
-    if (!isNTP1TokenSelected()) {
+    if (!isBFXTTokenSelected()) {
         newUnit = unit->itemData(idx, BitcoinUnits::UnitRole).toInt();
     } else {
-        newUnit = static_cast<int>(BitcoinUnit::NTP1);
+        newUnit = static_cast<int>(BitcoinUnit::BFXT);
     }
 
     // Parse current value and convert to new unit
@@ -245,7 +245,7 @@ void BitcoinAmountField::unitChanged(int idx)
 
     if (valid) {
         // If value was valid, re-place it in the widget with the new unit
-        if (!isNTP1TokenSelected()) {
+        if (!isBFXTTokenSelected()) {
             setValue(currentValue);
         } else {
             setText("");

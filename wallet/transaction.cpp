@@ -684,7 +684,7 @@ std::string CTransaction::DecryptMetadataOfTx(const StringViewT metadataStr, con
     std::string decryptedMessage;
     for (const CKey& key : keysVec) {
         try {
-            decryptedMessage = NTP1Script::DecryptMetadata(metadataStr, key);
+            decryptedMessage = BFXTScript::DecryptMetadata(metadataStr, key);
             break;
         } catch (...) {
         }

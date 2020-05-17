@@ -465,40 +465,40 @@ void RunCrossPlatformSerializationTests()
             __LINE__);
     }
 
-    NTP1OutPoint ntp1OutPoint(uint256v, 0x12345678);
+    BFXTOutPoint bfxtOutPoint(uint256v, 0x12345678);
     {
         CDataStream ss(SER_DISK, 0);
-        ss << ntp1OutPoint;
+        ss << bfxtOutPoint;
         TEST_EQUALITY(boost::algorithm::hex(ss.str()),
                       "245713353534126824571378563412887766554442221168245713785634120078563412",
                       __LINE__);
     }
 
-    NTP1TokenTxData ntp1TokenTxData;
-    ntp1TokenTxData.setTokenId("abcdefg");                // std::string
-    ntp1TokenTxData.setAmount(0x12345678);                // NTP1Int
-    ntp1TokenTxData.setIssueTxIdHex(uint256v.ToString()); // uint256
-    ntp1TokenTxData.setDivisibility(0x1234567813572468);  // uint64_t
-    ntp1TokenTxData.setLockStatus(false);                 // int
-    ntp1TokenTxData.setAggregationPolicy("abbcddeefg");   // std::string
-    ntp1TokenTxData.setTokenSymbol("ABCDE");              // std::string
+    BFXTTokenTxData bfxtTokenTxData;
+    bfxtTokenTxData.setTokenId("abcdefg");                // std::string
+    bfxtTokenTxData.setAmount(0x12345678);                // BFXTInt
+    bfxtTokenTxData.setIssueTxIdHex(uint256v.ToString()); // uint256
+    bfxtTokenTxData.setDivisibility(0x1234567813572468);  // uint64_t
+    bfxtTokenTxData.setLockStatus(false);                 // int
+    bfxtTokenTxData.setAggregationPolicy("abbcddeefg");   // std::string
+    bfxtTokenTxData.setTokenSymbol("ABCDE");              // std::string
     {
         CDataStream ss(SER_DISK, 0);
-        ss << ntp1TokenTxData;
+        ss << bfxtTokenTxData;
         TEST_EQUALITY(
             boost::algorithm::hex(ss.str()),
             "0761626364656667093330353431393839362457133535341268245713785634128877665544422211682"
             "4571378563412006824571378563412000000000A61626263646465656667054142434445",
             __LINE__);
     }
-    NTP1TxIn ntp1TxIn;
-    ntp1TxIn.setPrevout(ntp1OutPoint);                    // NTP1OutPoint
-    ntp1TxIn.setScriptSigHex(cTxIn.scriptSig.ToString()); // std::string
-    ntp1TxIn.setSequence(0x1234567813572468);             // uint64_t
-    ntp1TxIn.__addToken(ntp1TokenTxData);                 // std::vector<NTP1TokenTxData>
+    BFXTTxIn bfxtTxIn;
+    bfxtTxIn.setPrevout(bfxtOutPoint);                    // BFXTOutPoint
+    bfxtTxIn.setScriptSigHex(cTxIn.scriptSig.ToString()); // std::string
+    bfxtTxIn.setSequence(0x1234567813572468);             // uint64_t
+    bfxtTxIn.__addToken(bfxtTokenTxData);                 // std::vector<BFXTTokenTxData>
     {
         CDataStream ss(SER_DISK, 0);
-        ss << ntp1TxIn;
+        ss << bfxtTxIn;
         TEST_EQUALITY(
             boost::algorithm::hex(ss.str()),
             "245713353534126824571378563412887766554442221168245713785634120078563412314F505F4E4F5"
@@ -509,16 +509,16 @@ void RunCrossPlatformSerializationTests()
             __LINE__);
     }
 
-    NTP1TxOut ntp1TxOut;
-    ntp1TxOut.setNValue(0x12345678);          // int64_t
-    ntp1TxOut.setScriptPubKeyAsm("abcdefg");  // std::string
-    ntp1TxOut.setScriptPubKeyHex("deadbeef"); // std::string
-    ntp1TxOut.__addToken(ntp1TokenTxData);    // std::vector<NTP1TokenTxData>
-    ntp1TxOut.setAddress("ABCDEF");           // std::string
+    BFXTTxOut bfxtTxOut;
+    bfxtTxOut.setNValue(0x12345678);          // int64_t
+    bfxtTxOut.setScriptPubKeyAsm("abcdefg");  // std::string
+    bfxtTxOut.setScriptPubKeyHex("deadbeef"); // std::string
+    bfxtTxOut.__addToken(bfxtTokenTxData);    // std::vector<BFXTTokenTxData>
+    bfxtTxOut.setAddress("ABCDEF");           // std::string
 
     {
         CDataStream ss(SER_DISK, 0);
-        ss << ntp1TxOut;
+        ss << bfxtTxOut;
         TEST_EQUALITY(
             boost::algorithm::hex(ss.str()),
             "7856341200000000086465616462656566076162636465666701076162636465666709333035343139383"
@@ -527,13 +527,13 @@ void RunCrossPlatformSerializationTests()
             __LINE__);
     }
 
-    NTP1Transaction ntp1Transaction;
-    ntp1Transaction.__manualSet(0x12345678, uint256v, {'a', 'b', 'c', 'd', 'e', 'f'}, {ntp1TxIn},
-                                {ntp1TxOut}, 0x1234567813572468, 0x1234567813572468,
-                                NTP1TxType_TRANSFER);
+    BFXTTransaction bfxtTransaction;
+    bfxtTransaction.__manualSet(0x12345678, uint256v, {'a', 'b', 'c', 'd', 'e', 'f'}, {bfxtTxIn},
+                                {bfxtTxOut}, 0x1234567813572468, 0x1234567813572468,
+                                BFXTTxType_TRANSFER);
     {
         CDataStream ss(SER_DISK, 0);
-        ss << ntp1Transaction;
+        ss << bfxtTransaction;
         TEST_EQUALITY(
             boost::algorithm::hex(ss.str()),
             "7856341268245713785634122457133535341268245713785634128877665544422211682457137856341"

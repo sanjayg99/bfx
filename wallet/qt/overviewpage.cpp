@@ -44,7 +44,7 @@ public:
         QString   famount    = index.data(TransactionTableModel::FormattedAmountRole).toString();
         bool      confirmed  = index.data(TransactionTableModel::ConfirmedRole).toBool();
         QVariant  value      = index.data(Qt::ForegroundRole);
-        bool      isNTP1     = index.data(TransactionTableModel::IsNTP1Role).toBool();
+        bool      isBFXT     = index.data(TransactionTableModel::IsBFXTRole).toBool();
         QColor    foreground = option.palette.color(QPalette::Text);
         if (qVariantCanConvert<QColor>(value)) {
             foreground = qvariant_cast<QColor>(value);
@@ -62,7 +62,7 @@ public:
         }
         painter->setPen(foreground);
         QString amountText;
-        if (isNTP1) {
+        if (isBFXT) {
             amountText = famount;
         } else {
             amountText = BitcoinUnits::formatWithUnit(unit, amount, true);

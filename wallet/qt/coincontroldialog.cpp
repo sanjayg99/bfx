@@ -5,7 +5,7 @@
 #include "bitcoinunits.h"
 #include "coincontrol.h"
 #include "init.h"
-#include "ntp1/ntp1transaction.h"
+#include "bfxt/bfxttransaction.h"
 #include "main.h"
 #include "optionsmodel.h"
 #include "walletmodel.h"
@@ -492,26 +492,26 @@ void CoinControlDialog::updateLabels(WalletModel* model, QDialog* dialog)
         // Quantity
         nQuantity++;
 
-        // check for NTP1 inputs, to avoid adding NTP1 inputs to the amount
-        bool txIsNTP1     = NTP1Transaction::IsTxNTP1(out.tx);
-        bool outputIsNTP1 = false;
-        if (txIsNTP1) {
+        // check for BFXT inputs, to avoid adding BFXT inputs to the amount
+        bool txIsBFXT     = BFXTTransaction::IsTxBFXT(out.tx);
+        bool outputIsBFXT = false;
+        if (txIsBFXT) {
             try {
-                NTP1Transaction                                       ntp1tx;
-                std::vector<std::pair<CTransaction, NTP1Transaction>> prevTxs =
-                    NTP1Transaction::GetAllNTP1InputsOfTx(*out.tx, false);
-                ntp1tx.readNTP1DataFromTx(*out.tx, prevTxs);
-                outputIsNTP1 = (ntp1tx.getTxOut(out.i).tokenCount() != 0);
+                BFXTTransaction                                       bfxttx;
+                std::vector<std::pair<CTransaction, BFXTTransaction>> prevTxs =
+                    BFXTTransaction::GetAllBFXTInputsOfTx(*out.tx, false);
+                bfxttx.readBFXTDataFromTx(*out.tx, prevTxs);
+                outputIsBFXT = (bfxttx.getTxOut(out.i).tokenCount() != 0);
 
             } catch (std::exception& ex) {
-                printf("Unable to read NTP1 transaction for coin control: %s. Error says: %s",
+                printf("Unable to read BFXT transaction for coin control: %s. Error says: %s",
                        out.tx->GetHash().ToString().c_str(), ex.what());
-                outputIsNTP1 = false;
+                outputIsBFXT = false;
             }
         }
 
         // Amount
-        if (!outputIsNTP1) {
+        if (!outputIsBFXT) {
             nAmount += out.tx->vout[out.i].nValue;
         }
 
@@ -743,52 +743,52 @@ void CoinControlDialog::updateView()
             // figure out token type
             QString sTokenType        = "";
             QString sTokenId          = "";
-            QString sNTP1TokenAmounts = "";
-            bool    txIsNTP1          = NTP1Transaction::IsTxNTP1(out.tx);
-            if (txIsNTP1) {
+            QString sBFXTTokenAmounts = "";
+            bool    txIsBFXT          = BFXTTransaction::IsTxBFXT(out.tx);
+            if (txIsBFXT) {
                 try {
-                    NTP1Transaction                                       ntp1tx;
-                    std::vector<std::pair<CTransaction, NTP1Transaction>> prevTxs =
-                        NTP1Transaction::GetAllNTP1InputsOfTx(*out.tx, false);
-                    ntp1tx.readNTP1DataFromTx(*out.tx, prevTxs);
+                    BFXTTransaction                                       bfxttx;
+                    std::vector<std::pair<CTransaction, BFXTTransaction>> prevTxs =
+                        BFXTTransaction::GetAllBFXTInputsOfTx(*out.tx, false);
+                    bfxttx.readBFXTDataFromTx(*out.tx, prevTxs);
                     bool considerNeblsToo = (out.tx->vout[out.i].nValue > MIN_TX_FEE);
                     if (considerNeblsToo) {
                         sTokenType += "BFX";
-                        sNTP1TokenAmounts +=
+                        sBFXTTokenAmounts +=
                             BitcoinUnits::format(nDisplayUnit, out.tx->vout[out.i].nValue);
-                        sTokenId += QString::fromStdString(NTP1SendTxData::NEBL_TOKEN_ID);
+                        sTokenId += QString::fromStdString(BFXTSendTxData::NEBL_TOKEN_ID);
                     }
 
-                    const NTP1TxOut& ntp1txOut = ntp1tx.getTxOut(out.i);
-                    for (int i = 0; i < (int)ntp1txOut.tokenCount(); i++) {
-                        if (ntp1txOut.getToken(i).getAmount() == 0) {
+                    const BFXTTxOut& bfxttxOut = bfxttx.getTxOut(out.i);
+                    for (int i = 0; i < (int)bfxttxOut.tokenCount(); i++) {
+                        if (bfxttxOut.getToken(i).getAmount() == 0) {
                             continue;
                         }
                         if (i > 0 || considerNeblsToo) {
                             // +'s are kept because we're not sure that all Qt versions support new lines
                             sTokenType += "+\n";
-                            sNTP1TokenAmounts += "+\n";
+                            sBFXTTokenAmounts += "+\n";
                             sTokenId += "+\n";
                         }
-                        sTokenType += QString::fromStdString(ntp1txOut.getToken(i).getTokenSymbol());
-                        sNTP1TokenAmounts += QString::fromStdString(ToString(ntp1txOut.getToken(i).getAmount()));
-                        sTokenId += QString::fromStdString(ntp1txOut.getToken(i).getTokenId());
+                        sTokenType += QString::fromStdString(bfxttxOut.getToken(i).getTokenSymbol());
+                        sBFXTTokenAmounts += QString::fromStdString(ToString(bfxttxOut.getToken(i).getAmount()));
+                        sTokenId += QString::fromStdString(bfxttxOut.getToken(i).getTokenId());
                     }
 
                 } catch (std::exception& ex) {
-                    printf("Unable to read NTP1 transaction for coin control: %s. Error says: %s\n",
+                    printf("Unable to read BFXT transaction for coin control: %s. Error says: %s\n",
                            out.tx->GetHash().ToString().c_str(), ex.what());
                     sTokenType        = "(Unknown)";
-                    sNTP1TokenAmounts = "(Unknown)";
+                    sBFXTTokenAmounts = "(Unknown)";
                     sTokenId          = "(Unknown)";
                 }
             } else {
-                sTokenId   = QString::fromStdString(NTP1SendTxData::NEBL_TOKEN_ID);
+                sTokenId   = QString::fromStdString(BFXTSendTxData::NEBL_TOKEN_ID);
                 sTokenType = "BFX";
             }
             // in case it's not a token, then it's nebls
-            if (sTokenId.isEmpty() && sTokenType.isEmpty() && sNTP1TokenAmounts.isEmpty()) {
-                sTokenId   = QString::fromStdString(NTP1SendTxData::NEBL_TOKEN_ID);
+            if (sTokenId.isEmpty() && sTokenType.isEmpty() && sBFXTTokenAmounts.isEmpty()) {
+                sTokenId   = QString::fromStdString(BFXTSendTxData::NEBL_TOKEN_ID);
                 sTokenType = "BFX";
             }
 
@@ -798,14 +798,14 @@ void CoinControlDialog::updateView()
 
             // amount
             itemOutput->setText(COLUMN_AMOUNT,
-                                (sNTP1TokenAmounts.isEmpty()
+                                (sBFXTTokenAmounts.isEmpty()
                                      ? BitcoinUnits::format(nDisplayUnit, out.tx->vout[out.i].nValue)
-                                     : sNTP1TokenAmounts));
+                                     : sBFXTTokenAmounts));
             itemOutput->setText(COLUMN_AMOUNT_INT64,
-                                (sNTP1TokenAmounts.isEmpty()
+                                (sBFXTTokenAmounts.isEmpty()
                                      ? strPad(QString::number(out.tx->vout[out.i].nValue), 15,
                                               " ")
-                                     : sNTP1TokenAmounts)); // padding so that sorting works correctly
+                                     : sBFXTTokenAmounts)); // padding so that sorting works correctly
 
             // date
             itemOutput->setText(

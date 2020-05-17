@@ -219,7 +219,7 @@ static const CRPCCommand vRPCCommands[] =
     { "getaccount",                &getaccount,                false,  false },
     { "getaddressesbyaccount",     &getaddressesbyaccount,     true,   false },
     { "sendtoaddress",             &sendtoaddress,             false,  false },
-    { "sendntp1toaddress",         &sendntp1toaddress,         false,  false },
+    { "sendbfxttoaddress",         &sendbfxttoaddress,         false,  false },
     { "getreceivedbyaddress",      &getreceivedbyaddress,      false,  false },
     { "getreceivedbyaccount",      &getreceivedbyaccount,      false,  false },
     { "listreceivedbyaddress",     &listreceivedbyaddress,     false,  false },
@@ -233,8 +233,8 @@ static const CRPCCommand vRPCCommands[] =
     { "validateaddress",           &validateaddress,           true,   false },
     { "validatepubkey",            &validatepubkey,            true,   false },
     { "getbalance",                &getbalance,                false,  false },
-    { "getntp1balances",           &getntp1balances,           false,  false },
-    { "getntp1balance",            &getntp1balance,            false,  false },
+    { "getbfxtbalances",           &getbfxtbalances,           false,  false },
+    { "getbfxtbalance",            &getbfxtbalance,            false,  false },
     { "move",                      &movecmd,                   false,  false },
     { "sendfrom",                  &sendfrom,                  false,  false },
     { "sendmany",                  &sendmany,                  false,  false },
@@ -263,7 +263,7 @@ static const CRPCCommand vRPCCommands[] =
     { "listunspent",               &listunspent,               false,  false },
     { "getrawtransaction",         &getrawtransaction,         false,  false },
     { "createrawtransaction",      &createrawtransaction,      false,  false },
-    { "createrawntp1transaction",  &createrawntp1transaction,  false,  false },
+    { "createrawbfxttransaction",  &createrawbfxttransaction,  false,  false },
     { "decoderawtransaction",      &decoderawtransaction,      false,  false },
     { "decodescript",              &decodescript,              false,  false },
     { "signrawtransaction",        &signrawtransaction,        false,  false },
@@ -1177,9 +1177,9 @@ Array RPCConvertValues(const std::string& strMethod, const std::vector<std::stri
         ConvertTo<bool>(params[0]);
     if (strMethod == "sendtoaddress" && n > 1)
         ConvertTo<double>(params[1]);
-    if (strMethod == "sendntp1toaddress" && n > 1)
+    if (strMethod == "sendbfxttoaddress" && n > 1)
         ConvertTo<int64_t>(params[1]);
-    if (strMethod == "sendntp1toaddress" && n > 4)
+    if (strMethod == "sendbfxttoaddress" && n > 4)
         ConvertTo<bool>(params[4]);
     if (strMethod == "settxfee" && n > 0)
         ConvertTo<double>(params[0]);
@@ -1197,7 +1197,7 @@ Array RPCConvertValues(const std::string& strMethod, const std::vector<std::stri
         ConvertTo<bool>(params[1]);
     if (strMethod == "getbalance" && n > 1)
         ConvertTo<int64_t>(params[1]);
-    if (strMethod == "getntp1balances" && n > 0)
+    if (strMethod == "getbfxtbalances" && n > 0)
         ConvertTo<int64_t>(params[0]);
     if (strMethod == "getblock" && n > 1)
         ConvertTo<bool>(params[1]);
@@ -1277,11 +1277,11 @@ Array RPCConvertValues(const std::string& strMethod, const std::vector<std::stri
         ConvertTo<Array>(params[0]);
     if (strMethod == "createrawtransaction" && n > 1)
         ConvertTo<Object>(params[1]);
-    if (strMethod == "createrawntp1transaction" && n > 0)
+    if (strMethod == "createrawbfxttransaction" && n > 0)
         ConvertTo<Array>(params[0]);
-    if (strMethod == "createrawntp1transaction" && n > 1)
+    if (strMethod == "createrawbfxttransaction" && n > 1)
         ConvertTo<Object>(params[1]);
-    if (strMethod == "createrawntp1transaction" && n > 3)
+    if (strMethod == "createrawbfxttransaction" && n > 3)
         ConvertTo<bool>(params[3]);
     if (strMethod == "signrawtransaction" && n > 1)
         ConvertTo<Array>(params[1], true);
@@ -1377,10 +1377,10 @@ int main(int argc, char* argv[])
 
 const CRPCTable tableRPC;
 
-std::vector<NTP1SendTokensOneRecipientData>
-GetNTP1RecipientsVector(const Object& sendTo, boost::shared_ptr<NTP1Wallet> ntp1wallet)
+std::vector<BFXTSendTokensOneRecipientData>
+GetBFXTRecipientsVector(const Object& sendTo, boost::shared_ptr<BFXTWallet> bfxtwallet)
 {
-    std::vector<NTP1SendTokensOneRecipientData> result;
+    std::vector<BFXTSendTokensOneRecipientData> result;
     for (const json_spirit::Pair& s : sendTo) {
         set<CBitcoinAddress> setAddress;
         CBitcoinAddress      address(s.name_);
@@ -1395,7 +1395,7 @@ GetNTP1RecipientsVector(const Object& sendTo, boost::shared_ptr<NTP1Wallet> ntp1
         CScript scriptPubKey;
         scriptPubKey.SetDestination(address.Get());
 
-        NTP1SendTokensOneRecipientData res;
+        BFXTSendTokensOneRecipientData res;
         res.destination = address.ToString();
         if (s.value_.type() == json_spirit::Value_type::obj_type) {
             json_spirit::Object obj = s.value_.get_obj();
@@ -1409,8 +1409,8 @@ GetNTP1RecipientsVector(const Object& sendTo, boost::shared_ptr<NTP1Wallet> ntp1
             res.amount             = static_cast<uint64_t>(nAmount);
             std::string providedId = obj[0].name_;
 
-            const std::unordered_map<std::string, NTP1TokenMetaData> tokenMetadataMap =
-                ntp1wallet->getTokenMetadataMap();
+            const std::unordered_map<std::string, BFXTTokenMetaData> tokenMetadataMap =
+                bfxtwallet->getTokenMetadataMap();
             // token id was not found
             if (tokenMetadataMap.find(providedId) == tokenMetadataMap.end()) {
                 res.tokenId   = "";
@@ -1438,7 +1438,7 @@ GetNTP1RecipientsVector(const Object& sendTo, boost::shared_ptr<NTP1Wallet> ntp1
             if (nAmount <= 0) {
                 throw std::runtime_error("Invalid amount: " + ::ToString(res.amount));
             }
-            res.tokenId = NTP1SendTxData::NEBL_TOKEN_ID;
+            res.tokenId = BFXTSendTxData::NEBL_TOKEN_ID;
         }
         result.push_back(res);
     }

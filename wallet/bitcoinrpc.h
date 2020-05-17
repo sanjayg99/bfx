@@ -19,8 +19,8 @@ class CBlockIndex;
 #include "checkpoints.h"
 #include "util.h"
 
-#include "ntp1/ntp1sendtokensonerecipientdata.h"
-#include "ntp1/ntp1sendtxdata.h"
+#include "bfxt/bfxtsendtokensonerecipientdata.h"
+#include "bfxt/bfxtsendtxdata.h"
 
 // HTTP status codes
 enum HTTPStatusCode
@@ -182,15 +182,15 @@ extern json_spirit::Value setaccount(const json_spirit::Array& params, bool fHel
 extern json_spirit::Value getaccount(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getaddressesbyaccount(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value sendtoaddress(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value sendntp1toaddress(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value sendbfxttoaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value udtobfxaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value signmessage(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value verifymessage(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getreceivedbyaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getreceivedbyaccount(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getbalance(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value getntp1balances(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value getntp1balance(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getbfxtbalances(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getbfxtbalance(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value movecmd(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value sendfrom(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value sendmany(const json_spirit::Array& params, bool fHelp);
@@ -223,7 +223,7 @@ extern json_spirit::Value getrawtransaction(const json_spirit::Array& params,
                                             bool                      fHelp); // in rcprawtransaction.cpp
 extern json_spirit::Value listunspent(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value createrawtransaction(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value createrawntp1transaction(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value createrawbfxttransaction(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decoderawtransaction(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decodescript(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value signrawtransaction(const json_spirit::Array& params, bool fHelp);
@@ -242,7 +242,7 @@ extern json_spirit::Value getblockbynumber(const json_spirit::Array& params, boo
 extern json_spirit::Value getcheckpoint(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value exportblockchain(const json_spirit::Array& params, bool fHelp);
 
-std::vector<NTP1SendTokensOneRecipientData>
-GetNTP1RecipientsVector(const json_spirit::Object& sendTo, boost::shared_ptr<NTP1Wallet> ntp1wallet);
+std::vector<BFXTSendTokensOneRecipientData>
+GetBFXTRecipientsVector(const json_spirit::Object& sendTo, boost::shared_ptr<BFXTWallet> bfxtwallet);
 
 #endif

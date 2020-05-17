@@ -261,7 +261,7 @@ CBlock* CreateNewBlock(CWallet* pwallet, bool fProofOfStake, int64_t* pFees)
         int                    nBlockSigOps = 100;
         bool                   fSortedByFee = (nBlockPrioritySize <= 0);
 
-        map<uint256, std::vector<std::pair<CTransaction, NTP1Transaction>>> mapQueuedNTP1Inputs;
+        map<uint256, std::vector<std::pair<CTransaction, BFXTTransaction>>> mapQueuedBFXTInputs;
 
         TxPriorityCompare comparer(fSortedByFee);
         std::make_heap(vecPriority.begin(), vecPriority.end(), comparer);
@@ -309,9 +309,9 @@ CBlock* CreateNewBlock(CWallet* pwallet, bool fProofOfStake, int64_t* pFees)
             // because we're already processing them in order of dependency
             map<uint256, CTxIndex> mapTestPoolTmp(mapTestPool);
 
-            std::vector<std::pair<CTransaction, NTP1Transaction>>               inputsTxs;
-            map<uint256, std::vector<std::pair<CTransaction, NTP1Transaction>>> mapQueuedNTP1InputsTmp(
-                mapQueuedNTP1Inputs);
+            std::vector<std::pair<CTransaction, BFXTTransaction>>               inputsTxs;
+            map<uint256, std::vector<std::pair<CTransaction, BFXTTransaction>>> mapQueuedBFXTInputsTmp(
+                mapQueuedBFXTInputs);
 
             MapPrevTx mapInputs;
             bool      fInvalid;
@@ -328,18 +328,18 @@ CBlock* CreateNewBlock(CWallet* pwallet, bool fProofOfStake, int64_t* pFees)
 
             try {
                 std::string opRet;
-                if (NTP1Transaction::IsTxNTP1(&tx, &opRet)) {
-                    auto script = NTP1Script::ParseScript(opRet);
-                    if (script->getTxType() == NTP1Script::TxType_Issuance) {
+                if (BFXTTransaction::IsTxBFXT(&tx, &opRet)) {
+                    auto script = BFXTScript::ParseScript(opRet);
+                    if (script->getTxType() == BFXTScript::TxType_Issuance) {
 
-                        inputsTxs = NTP1Transaction::StdFetchedInputTxsToNTP1(
-                            tx, mapInputs, txdb, false, mapQueuedNTP1InputsTmp, mapTestPoolTmp);
+                        inputsTxs = BFXTTransaction::StdFetchedInputTxsToBFXT(
+                            tx, mapInputs, txdb, false, mapQueuedBFXTInputsTmp, mapTestPoolTmp);
 
-                        NTP1Transaction ntp1tx;
-                        ntp1tx.readNTP1DataFromTx(tx, inputsTxs);
-                        AssertNTP1TokenNameIsNotAlreadyInMainChain(ntp1tx, txdb);
-                        if (ntp1tx.getTxType() == NTP1TxType_ISSUANCE) {
-                            std::string currSymbol = ntp1tx.getTokenSymbolIfIssuance();
+                        BFXTTransaction bfxttx;
+                        bfxttx.readBFXTDataFromTx(tx, inputsTxs);
+                        AssertBFXTTokenNameIsNotAlreadyInMainChain(bfxttx, txdb);
+                        if (bfxttx.getTxType() == BFXTTxType_ISSUANCE) {
+                            std::string currSymbol = bfxttx.getTokenSymbolIfIssuance();
                             // make sure that case doesn't matter by converting to upper case
                             std::transform(currSymbol.begin(), currSymbol.end(), currSymbol.begin(),
                                            ::toupper);
@@ -350,7 +350,7 @@ CBlock* CreateNewBlock(CWallet* pwallet, bool fProofOfStake, int64_t* pFees)
                                                          "Skipping this transaction.");
                             }
                             issuedTokensSymbolsInThisBlock.insert(
-                                std::make_pair(currSymbol, ntp1tx.getTxHash()));
+                                std::make_pair(currSymbol, bfxttx.getTxHash()));
                         }
                     }
                 }
@@ -373,8 +373,8 @@ CBlock* CreateNewBlock(CWallet* pwallet, bool fProofOfStake, int64_t* pFees)
 
             mapTestPoolTmp[tx.GetHash()] = CTxIndex(CDiskTxPos(1, 1), tx.vout.size());
             swap(mapTestPool, mapTestPoolTmp);
-            mapQueuedNTP1InputsTmp[tx.GetHash()] = inputsTxs;
-            swap(mapQueuedNTP1Inputs, mapQueuedNTP1InputsTmp);
+            mapQueuedBFXTInputsTmp[tx.GetHash()] = inputsTxs;
+            swap(mapQueuedBFXTInputs, mapQueuedBFXTInputsTmp);
 
             // Added
             pblock->vtx.push_back(tx);

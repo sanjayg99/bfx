@@ -50,9 +50,9 @@ public:
         ConfirmedRole,
         /** Formatted amount, without brackets when unconfirmed */
         FormattedAmountRole,
-        IsNTP1Role,
-        NTP1MetadataHexRole,
-        NTP1MetadataRole,
+        IsBFXTRole,
+        BFXTMetadataHexRole,
+        BFXTMetadataRole,
         OpReturnHexRole,
         /** Transaction status (TransactionRecord::Status) */
         StatusRole

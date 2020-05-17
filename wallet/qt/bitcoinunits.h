@@ -20,7 +20,7 @@ public:
         BTC,
         mBTC,
         uBTC,
-        NTP1
+        BFXT
     };
 
     //! @name Static API

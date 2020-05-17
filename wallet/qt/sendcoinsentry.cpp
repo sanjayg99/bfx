@@ -29,7 +29,7 @@ SendCoinsEntry::SendCoinsEntry(QWidget* parent) : QFrame(parent), ui(new Ui::Sen
 
     GUIUtil::setupAddressWidget(ui->payTo, this);
 
-    updateNTP1TokensList();
+    updateBFXTTokensList();
 }
 
 SendCoinsEntry::~SendCoinsEntry() { delete ui; }
@@ -87,7 +87,7 @@ void SendCoinsEntry::clear()
     updateDisplayUnit();
 }
 
-void SendCoinsEntry::updateNTP1TokensList() { ui->payAmount->slot_updateTokensList(); }
+void SendCoinsEntry::updateBFXTTokensList() { ui->payAmount->slot_updateTokensList(); }
 
 void SendCoinsEntry::on_deleteButton_clicked() { emit removeEntry(this); }
 

@@ -18,7 +18,7 @@ public:
     explicit SendCoinsEntry(QWidget* parent = 0);
     ~SendCoinsEntry();
 
-    void updateNTP1TokensList();
+    void updateBFXTTokensList();
 
     void               setModel(WalletModel* model);
     bool               validate();

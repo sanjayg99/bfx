@@ -4,7 +4,7 @@
 #include "bitcoinunits.h"
 #include "monitoreddatamapper.h"
 #include "netbase.h"
-#include "ntp1/ntp1tokenlistmodel.h"
+#include "bfxt/bfxttokenlistmodel.h"
 #include "optionsmodel.h"
 
 #include <QDir>
@@ -89,8 +89,8 @@ OptionsDialog::OptionsDialog(QWidget* parent)
     mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
     mapper->setOrientation(Qt::Vertical);
 
-    connect(ui->clearNTP1DataCacheButton, &QPushButton::clicked, this,
-            &OptionsDialog::slot_clearNTP1DataCache);
+    connect(ui->clearBFXTDataCacheButton, &QPushButton::clicked, this,
+            &OptionsDialog::slot_clearBFXTDataCache);
 
     connect(ui->scheduleWalletRescanButton, &QPushButton::clicked, this,
             &OptionsDialog::slot_enableRescanOnNextRestart);
@@ -238,19 +238,19 @@ void OptionsDialog::handleProxyIpValid(QValidatedLineEdit* object, bool fState)
     }
 }
 
-void OptionsDialog::slot_clearNTP1DataCache()
+void OptionsDialog::slot_clearBFXTDataCache()
 {
     try {
-        boost::filesystem::remove(GetDataDir() / NTP1WalletCacheFileName);
-        NTP1TokenListModel* ptr;
-        if ((ptr = ntp1TokenListModelInstance.load()) != nullptr) {
+        boost::filesystem::remove(GetDataDir() / BFXTWalletCacheFileName);
+        BFXTTokenListModel* ptr;
+        if ((ptr = bfxtTokenListModelInstance.load()) != nullptr) {
             QMessageBox::StandardButton reply;
             reply = QMessageBox::question(
-                this, "Clear NTP1 cache?",
+                this, "Clear BFXT cache?",
                 "This will require closing bfx-qt. Are you sure you want to proceed?",
                 QMessageBox::Yes | QMessageBox::No);
             if (reply == QMessageBox::Yes) {
-                ptr->clearNTP1Wallet();
+                ptr->clearBFXTWallet();
                 QApplication::quit();
             }
         }

@@ -37,7 +37,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
         // Credit
         //
         for (const CTxOut& txout : wtx.vout) {
-            if (NTP1Transaction::IsTxOutputOpRet(&txout, nullptr)) {
+            if (BFXTTransaction::IsTxOutputOpRet(&txout, nullptr)) {
                 continue;
             }
             if (wallet->IsMine(txout)) {
@@ -82,7 +82,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
         bool fAllToMe = true;
         for (const CTxOut& txout : wtx.vout) {
             // OP_RETURN is not to decide whether an output is mine
-            if (NTP1Transaction::IsTxOutputOpRet(&txout, nullptr)) {
+            if (BFXTTransaction::IsTxOutputOpRet(&txout, nullptr)) {
                 continue;
             }
             fAllToMe = fAllToMe && wallet->IsMine(txout);
@@ -102,7 +102,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
 
             for (unsigned int nOut = 0; nOut < wtx.vout.size(); nOut++) {
                 const CTxOut& txout = wtx.vout[nOut];
-                if (NTP1Transaction::IsTxOutputOpRet(&txout, nullptr)) {
+                if (BFXTTransaction::IsTxOutputOpRet(&txout, nullptr)) {
                     continue;
                 }
                 TransactionRecord sub(hash, nTime);
@@ -146,22 +146,22 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet* 
     return parts;
 }
 
-void TransactionRecord::readNTP1TxData()
+void TransactionRecord::readBFXTTxData()
 {
     try {
         if (!mempool.lookup(hash, tx)) {
             tx = CTransaction::FetchTxFromDisk(hash);
         }
-        std::vector<std::pair<CTransaction, NTP1Transaction>> ntp1inputs =
-            NTP1Transaction::GetAllNTP1InputsOfTx(tx, false);
-        ntp1tx.readNTP1DataFromTx(tx, ntp1inputs);
-        ntp1DataLoaded    = true;
-        ntp1DataLoadError = false;
+        std::vector<std::pair<CTransaction, BFXTTransaction>> bfxtinputs =
+            BFXTTransaction::GetAllBFXTInputsOfTx(tx, false);
+        bfxttx.readBFXTDataFromTx(tx, bfxtinputs);
+        bfxtDataLoaded    = true;
+        bfxtDataLoadError = false;
     } catch (std::exception& ex) {
-        printf("Failed to read NTP1 transaction data for transaction record. Transaction hash: %s. "
+        printf("Failed to read BFXT transaction data for transaction record. Transaction hash: %s. "
                "Error: %s\n",
                hash.ToString().c_str(), ex.what());
-        ntp1DataLoadError = true;
+        bfxtDataLoadError = true;
     }
 }
 

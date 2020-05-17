@@ -26,8 +26,8 @@ DbSmartPtrType glob_db_main(nullptr, [](MDB_dbi*) {});
 DbSmartPtrType glob_db_blockIndex(nullptr, [](MDB_dbi*) {});
 DbSmartPtrType glob_db_blocks(nullptr, [](MDB_dbi*) {});
 DbSmartPtrType glob_db_tx(nullptr, [](MDB_dbi*) {});
-DbSmartPtrType glob_db_ntp1Tx(nullptr, [](MDB_dbi*) {});
-DbSmartPtrType glob_db_ntp1tokenNames(nullptr, [](MDB_dbi*) {});
+DbSmartPtrType glob_db_bfxtTx(nullptr, [](MDB_dbi*) {});
+DbSmartPtrType glob_db_bfxttokenNames(nullptr, [](MDB_dbi*) {});
 DbSmartPtrType glob_db_addrsVsPubKeys(nullptr, [](MDB_dbi*) {});
 
 using namespace std;
@@ -192,8 +192,8 @@ bool IsQuickSyncOSCompatible(const std::string& osValue)
 void DownloadQuickSyncFile(const json_spirit::Value& fileVal, const filesystem::path& dbdir)
 {
     // get json fields of this file
-    const json_spirit::Array urlsObj = NTP1Tools::GetArrayField(fileVal.get_obj(), "url");
-    const std::string        sum     = NTP1Tools::GetStrField(fileVal.get_obj(), "sha256sum");
+    const json_spirit::Array urlsObj = BFXTTools::GetArrayField(fileVal.get_obj(), "url");
+    const std::string        sum     = BFXTTools::GetStrField(fileVal.get_obj(), "sha256sum");
     const std::string        sumBin  = boost::algorithm::unhex(sum);
 
     if (urlsObj.empty()) {
@@ -211,7 +211,7 @@ void DownloadQuickSyncFile(const json_spirit::Value& fileVal, const filesystem::
     std::shuffle(urls.begin(), urls.end(), rng);
 
     // Diskspace check disabled as it doesn't deliver reliable results for large files
-    std::uintmax_t fileSize = static_cast<uint64_t>(NTP1Tools::GetInt64Field(fileVal.get_obj(), "size"));
+    std::uintmax_t fileSize = static_cast<uint64_t>(BFXTTools::GetInt64Field(fileVal.get_obj(), "size"));
     // check available diskspace
     std::uintmax_t availableSpace = GetFreeDiskSpace(dbdir);
     std::uintmax_t requiredSpace  = static_cast<std::size_t>(static_cast<double>(fileSize) * 1.2);
@@ -335,9 +335,9 @@ void DoQuickSync(const filesystem::path& dbdir)
             json_spirit::read_or_throw(jsonStrData, parsedJsonData);
             json_spirit::Array rootArray = parsedJsonData.get_array();
             for (const json_spirit::Value& val : rootArray) {
-                std::string        os        = NTP1Tools::GetStrField(val.get_obj(), "os");
-                uint64_t           dbversion = NTP1Tools::GetUint64Field(val.get_obj(), "dbversion");
-                json_spirit::Array files     = NTP1Tools::GetArrayField(val.get_obj(), "files");
+                std::string        os        = BFXTTools::GetStrField(val.get_obj(), "os");
+                uint64_t           dbversion = BFXTTools::GetUint64Field(val.get_obj(), "dbversion");
+                json_spirit::Array files     = BFXTTools::GetArrayField(val.get_obj(), "files");
 
                 if (dbversion != DATABASE_VERSION) {
                     printf("Skipping database with version %" PRIu64 "", dbversion);
@@ -404,7 +404,7 @@ void CTxDB::init_blockindex(bool fRemoveOld)
         filesystem::remove_all(directory); // remove directory
         {
             boost::system::error_code ec;
-            filesystem::remove(GetDataDir() / NTP1WalletCacheFileName, ec);
+            filesystem::remove(GetDataDir() / BFXTWalletCacheFileName, ec);
         }
 
         // delete block data files
@@ -424,12 +424,12 @@ void CTxDB::init_blockindex(bool fRemoveOld)
             }
         }
 
-        // delete NTP1 transaction data files
+        // delete BFXT transaction data files
         {
             unsigned int nFile = 1;
 
             while (true) {
-                filesystem::path strBlockFile = GetDataDir() / strprintf("ntp1txs%04u.dat", nFile);
+                filesystem::path strBlockFile = GetDataDir() / strprintf("bfxttxs%04u.dat", nFile);
 
                 // Break if no such file
                 if (!filesystem::exists(strBlockFile))
@@ -530,8 +530,8 @@ void CTxDB::init_blockindex(bool fRemoveOld)
     glob_db_blockIndex     = DbSmartPtrType(new MDB_dbi, dbDeleter);
     glob_db_blocks         = DbSmartPtrType(new MDB_dbi, dbDeleter);
     glob_db_tx             = DbSmartPtrType(new MDB_dbi, dbDeleter);
-    glob_db_ntp1Tx         = DbSmartPtrType(new MDB_dbi, dbDeleter);
-    glob_db_ntp1tokenNames = DbSmartPtrType(new MDB_dbi, dbDeleter);
+    glob_db_bfxtTx         = DbSmartPtrType(new MDB_dbi, dbDeleter);
+    glob_db_bfxttokenNames = DbSmartPtrType(new MDB_dbi, dbDeleter);
     glob_db_addrsVsPubKeys = DbSmartPtrType(new MDB_dbi, dbDeleter);
 
     // MDB_CREATE: Create the named database if it doesn't exist.
@@ -543,12 +543,12 @@ void CTxDB::init_blockindex(bool fRemoveOld)
                         "Failed to open db handle for db_blocks");
     CTxDB::lmdb_db_open(txn, LMDB_TXDB.c_str(), MDB_CREATE, *glob_db_tx,
                         "Failed to open db handle for glob_db_tx");
-    CTxDB::lmdb_db_open(txn, LMDB_NTP1TXDB.c_str(), MDB_CREATE, *glob_db_ntp1Tx,
-                        "Failed to open db handle for glob_db_ntp1Tx");
-    CTxDB::lmdb_db_open(txn, LMDB_NTP1TOKENNAMESDB.c_str(), MDB_CREATE | MDB_DUPSORT,
-                        *glob_db_ntp1tokenNames, "Failed to open db handle for glob_db_ntp1Tx");
+    CTxDB::lmdb_db_open(txn, LMDB_BFXTTXDB.c_str(), MDB_CREATE, *glob_db_bfxtTx,
+                        "Failed to open db handle for glob_db_bfxtTx");
+    CTxDB::lmdb_db_open(txn, LMDB_BFXTTOKENNAMESDB.c_str(), MDB_CREATE | MDB_DUPSORT,
+                        *glob_db_bfxttokenNames, "Failed to open db handle for glob_db_bfxtTx");
     CTxDB::lmdb_db_open(txn, LMDB_ADDRSVSPUBKEYSDB.c_str(), MDB_CREATE, *glob_db_addrsVsPubKeys,
-                        "Failed to open db handle for glob_db_ntp1Tx");
+                        "Failed to open db handle for glob_db_bfxtTx");
 
     // commit the transaction
     txn.commit();
@@ -565,11 +565,11 @@ void CTxDB::init_blockindex(bool fRemoveOld)
     if (!glob_db_tx) {
         throw std::runtime_error("LMDB nullptr after opening the db_tx database.");
     }
-    if (!glob_db_ntp1Tx) {
-        throw std::runtime_error("LMDB nullptr after opening the db_ntp1Tx database.");
+    if (!glob_db_bfxtTx) {
+        throw std::runtime_error("LMDB nullptr after opening the db_bfxtTx database.");
     }
-    if (!glob_db_ntp1tokenNames) {
-        throw std::runtime_error("LMDB nullptr after opening the db_ntp1tokenNames database.");
+    if (!glob_db_bfxttokenNames) {
+        throw std::runtime_error("LMDB nullptr after opening the db_bfxttokenNames database.");
     }
     if (!glob_db_addrsVsPubKeys) {
         throw std::runtime_error("LMDB nullptr after opening the db_addrsVsPubKeys database.");
@@ -695,16 +695,16 @@ bool CTxDB::test1_EraseStrKeyVal(const string& key) { return Erase(key, db_main)
 
 bool CTxDB::test2_ReadMultipleStr1KeyVal(const string& key, std::vector<string>& val)
 {
-    return ReadMultiple(key, val, false, db_ntp1tokenNames);
+    return ReadMultiple(key, val, false, db_bfxttokenNames);
 }
 
 bool CTxDB::test2_WriteStrKeyVal(const string& key, const string& val)
 {
-    return Write(key, val, db_ntp1tokenNames);
+    return Write(key, val, db_bfxttokenNames);
 }
 
-bool CTxDB::test2_ExistsStrKeyVal(const string& key) { return Exists(key, db_ntp1tokenNames); }
-bool CTxDB::test2_EraseStrKeyVal(const string& key) { return EraseAll(key, db_ntp1tokenNames); }
+bool CTxDB::test2_ExistsStrKeyVal(const string& key) { return Exists(key, db_bfxttokenNames); }
+bool CTxDB::test2_EraseStrKeyVal(const string& key) { return EraseAll(key, db_bfxttokenNames); }
 
 bool CTxDB::ReadVersion(int& nVersion)
 {
@@ -728,44 +728,44 @@ bool CTxDB::ReadTx(const CDiskTxPos& txPos, CTransaction& tx)
     return Read(txPos.nBlockPos, tx, db_blocks, 0, txPos.nTxPos);
 }
 
-bool CTxDB::ReadNTP1Tx(uint256 hash, NTP1Transaction& ntp1tx)
+bool CTxDB::ReadBFXTTx(uint256 hash, BFXTTransaction& bfxttx)
 {
-    ntp1tx.setNull();
-    return Read(hash, ntp1tx, db_ntp1Tx);
+    bfxttx.setNull();
+    return Read(hash, bfxttx, db_bfxtTx);
 }
 
-bool CTxDB::ReadNTP1TxsWithTokenSymbol(const std::string& tokenName, std::vector<uint256>& txs)
+bool CTxDB::ReadBFXTTxsWithTokenSymbol(const std::string& tokenName, std::vector<uint256>& txs)
 {
-    return ReadMultiple(tokenName, txs, false, db_ntp1tokenNames);
+    return ReadMultiple(tokenName, txs, false, db_bfxttokenNames);
 }
 
-bool CTxDB::WriteNTP1TxWithTokenSymbol(const std::string& tokenSymbol, const NTP1Transaction& ntp1tx)
+bool CTxDB::WriteBFXTTxWithTokenSymbol(const std::string& tokenSymbol, const BFXTTransaction& bfxttx)
 {
-    if (ntp1tx.isNull()) {
+    if (bfxttx.isNull()) {
         printf("Attempted to store token symbol information of token with given symbol %s",
                tokenSymbol.c_str());
         return false;
     }
     std::string symbol;
     try {
-        symbol = ntp1tx.getTokenSymbolIfIssuance();
+        symbol = bfxttx.getTokenSymbolIfIssuance();
     } catch (std::exception& ex) {
         printf("Failed to get token symbol for transaction: %s; with claimed token symbol %s. Error: %s",
-               ntp1tx.getTxHash().ToString().c_str(), tokenSymbol.c_str(), ex.what());
+               bfxttx.getTxHash().ToString().c_str(), tokenSymbol.c_str(), ex.what());
         return false;
     } catch (...) {
         printf("Failed to get token symbol for transaction: %s; with claimed token symbol %s. Unknown "
                "error.",
-               ntp1tx.getTxHash().ToString().c_str(), tokenSymbol.c_str());
+               bfxttx.getTxHash().ToString().c_str(), tokenSymbol.c_str());
         return false;
     }
     if (symbol != tokenSymbol) {
-        printf("While writing NTP1 tx for token names, the token name provided is not equal to the "
+        printf("While writing BFXT tx for token names, the token name provided is not equal to the "
                "token name calculated: %s != %s",
                symbol.c_str(), tokenSymbol.c_str());
         return false;
     }
-    return Write(tokenSymbol, ntp1tx.getTxHash(), db_ntp1tokenNames);
+    return Write(tokenSymbol, bfxttx.getTxHash(), db_bfxttokenNames);
 }
 
 bool CTxDB::ReadAddressPubKey(const CBitcoinAddress& address, std::vector<uint8_t>& pubkey)
@@ -778,15 +778,15 @@ bool CTxDB::WriteAddressPubKey(const CBitcoinAddress& address, const std::vector
     return Write(address, pubkey, db_addrsVsPubKeys);
 }
 
-bool CTxDB::WriteNTP1Tx(uint256 hash, const NTP1Transaction& ntp1tx)
+bool CTxDB::WriteBFXTTx(uint256 hash, const BFXTTransaction& bfxttx)
 {
-    return Write(hash, ntp1tx, db_ntp1Tx);
+    return Write(hash, bfxttx, db_bfxtTx);
 }
 
 bool CTxDB::ReadAllIssuanceTxs(std::vector<uint256>& txs)
 {
     // the key is empty because we want to get all keys in the database
-    return ReadMultiple(std::string(), txs, true, db_ntp1tokenNames);
+    return ReadMultiple(std::string(), txs, true, db_bfxttokenNames);
 }
 
 bool CTxDB::ReadBlock(uint256 hash, CBlock& blk, bool fReadTransactions)
@@ -810,7 +810,7 @@ bool CTxDB::EraseTxIndex(const CTransaction& tx)
 
 bool CTxDB::ContainsTx(uint256 hash) { return Exists(hash, db_tx); }
 
-bool CTxDB::ContainsNTP1Tx(uint256 hash) { return Exists(hash, db_ntp1Tx); }
+bool CTxDB::ContainsBFXTTx(uint256 hash) { return Exists(hash, db_bfxtTx); }
 
 bool CTxDB::ReadDiskTx(uint256 hash, CTransaction& tx, CTxIndex& txindex)
 {

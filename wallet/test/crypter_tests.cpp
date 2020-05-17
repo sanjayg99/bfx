@@ -1171,10 +1171,10 @@ TEST(cryptography_tests, encrypt_metadata)
                     uint64_t   messageLength = 1 + (CHL::RandomBytesAs<uint64_t>() % 100);
                     CHL::Bytes message       = CHL::RandomBytes(messageLength);
 
-                    std::string encrypted = NTP1Script::EncryptMetadataWithEphemeralKey(
+                    std::string encrypted = BFXTScript::EncryptMetadataWithEphemeralKey(
                         std::string(message.cbegin(), message.cend()), k1, encAlgo, ratchetAlgo,
                         authAlgo);
-                    std::string decryptedData = NTP1Script::DecryptMetadata(encrypted, k1);
+                    std::string decryptedData = BFXTScript::DecryptMetadata(encrypted, k1);
                     EXPECT_EQ(decryptedData, std::string(message.cbegin(), message.cend()));
                 }
             }

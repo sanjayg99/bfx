@@ -15,7 +15,7 @@ using namespace json_spirit;
 using namespace std;
 
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry,
-                     bool ignoreNTP1 = false);
+                     bool ignoreBFXT = false);
 extern enum Checkpoints::CPMode CheckpointsMode;
 
 double GetDifficulty(const CBlockIndex* blockindex)
@@ -97,7 +97,7 @@ double GetPoSKernelPS()
 }
 
 Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool fPrintTransactionDetail,
-                   bool ignoreNTP1 = false)
+                   bool ignoreBFXT = false)
 {
     Object result;
     result.push_back(Pair("hash", block.GetHash().GetHex()));
@@ -133,7 +133,7 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool fPri
         if (fPrintTransactionDetail) {
             Object entry;
 
-            TxToJSON(tx, 0, entry, ignoreNTP1);
+            TxToJSON(tx, 0, entry, ignoreBFXT);
 
             txinfo.push_back(entry);
         } else
@@ -247,12 +247,12 @@ Value getblock(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 4)
         throw runtime_error(
-            "getblock <hash> [verbose=true] [showtxns=false] [ignoreNTP1=false]\n"
+            "getblock <hash> [verbose=true] [showtxns=false] [ignoreBFXT=false]\n"
             "If verbose is false, returns a string that is serialized, hex-encoded data for block "
             "<hash>.\n"
             "If verbose is true, returns an Object with information about block <hash> .\n"
             "If verbose is true and showtxns is true, also returns Object about each transaction. Not "
-            "ignoring NTP1 will try to retireve NTP1 data from the database. This won't work if the "
+            "ignoring BFXT will try to retireve BFXT data from the database. This won't work if the "
             "transaction is not in the blockchain.");
 
     std::string strHash = params[0].get_str();
@@ -280,20 +280,20 @@ Value getblock(const Array& params, bool fHelp)
         return strHex;
     }
 
-    bool fIgnoreNTP1 = false;
+    bool fIgnoreBFXT = false;
     if (params.size() > 3)
-        fIgnoreNTP1 = params[3].get_bool();
+        fIgnoreBFXT = params[3].get_bool();
 
-    return blockToJSON(block, pblockindex, fShowTxns, fIgnoreNTP1);
+    return blockToJSON(block, pblockindex, fShowTxns, fIgnoreBFXT);
 }
 
 Value getblockbynumber(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 3)
-        throw runtime_error("getblockbynumber <number> [txinfo] [ignoreNTP1=false]\n"
+        throw runtime_error("getblockbynumber <number> [txinfo] [ignoreBFXT=false]\n"
                             "txinfo optional to print more detailed tx info\n"
-                            "Returns details of a block with given block-number. Not ignoring NTP1 will "
-                            "try to retireve NTP1 data from the database. This won't work if the "
+                            "Returns details of a block with given block-number. Not ignoring BFXT will "
+                            "try to retireve BFXT data from the database. This won't work if the "
                             "transaction is not in the blockchain.");
 
     int nHeight = params[0].get_int();
@@ -310,12 +310,12 @@ Value getblockbynumber(const Array& params, bool fHelp)
     pblockindex = boost::atomic_load(&mapBlockIndex[hash]);
     block.ReadFromDisk(pblockindex.get(), true);
 
-    bool fIgnoreNTP1 = false;
+    bool fIgnoreBFXT = false;
     if (params.size() > 2)
-        fIgnoreNTP1 = params[2].get_bool();
+        fIgnoreBFXT = params[2].get_bool();
 
     return blockToJSON(block, pblockindex.get(), params.size() > 1 ? params[1].get_bool() : false,
-                       fIgnoreNTP1);
+                       fIgnoreBFXT);
 }
 
 // ppcoin: get information of sync-checkpoint

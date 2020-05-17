@@ -13,11 +13,11 @@
 #include "kernel.h"
 #include "merkletx.h"
 #include "net.h"
-#include "ntp1/ntp1script.h"
-#include "ntp1/ntp1script_burn.h"
-#include "ntp1/ntp1script_issuance.h"
-#include "ntp1/ntp1script_transfer.h"
-#include "ntp1/ntp1transaction.h"
+#include "bfxt/bfxtscript.h"
+#include "bfxt/bfxtscript_burn.h"
+#include "bfxt/bfxtscript_issuance.h"
+#include "bfxt/bfxtscript_transfer.h"
+#include "bfxt/bfxttransaction.h"
 #include "outpoint.h"
 #include "txdb.h"
 #include "txindex.h"
@@ -39,7 +39,7 @@ using namespace boost;
 // Global state
 //
 
-std::set<uint256> UnrecoverableNTP1Txs;
+std::set<uint256> UnrecoverableBFXTTxs;
 
 CCriticalSection              cs_setpwalletRegistered;
 set<std::shared_ptr<CWallet>> setpwalletRegistered;
@@ -145,7 +145,7 @@ void static EraseFromWallets(uint256 hash)
 // make sure all wallets know about the given transaction, in the given block
 void SyncWithWallets(const CTransaction& tx, const CBlock* pblock, bool fUpdate, bool fConnect)
 {
-    // update NTP1 transactions
+    // update BFXT transactions
     if (pwalletMain->walletNewTxUpdateFunctor) {
         pwalletMain->walletNewTxUpdateFunctor->run(tx.GetHash(), nBestHeight);
     }
@@ -378,25 +378,25 @@ bool IsFinalTx(const CTransaction& tx, int nBlockHeight, int64_t nBlockTime)
     return true;
 }
 
-bool IsIssuedTokenBlacklisted(std::pair<CTransaction, NTP1Transaction>& txPair)
+bool IsIssuedTokenBlacklisted(std::pair<CTransaction, BFXTTransaction>& txPair)
 {
     const auto& prevout0      = txPair.first.vin[0].prevout;
     std::string storedTokenId = txPair.second.getTokenIdIfIssuance(prevout0.hash.ToString(), prevout0.n);
-    return IsNTP1TokenBlacklisted(storedTokenId);
+    return IsBFXTTokenBlacklisted(storedTokenId);
 }
 
-void AssertNTP1TokenNameIsNotAlreadyInMainChain(std::string sym, const uint256& txHash, CTxDB& txdb)
+void AssertBFXTTokenNameIsNotAlreadyInMainChain(std::string sym, const uint256& txHash, CTxDB& txdb)
 {
     // make sure that case doesn't matter by converting to upper case
     std::transform(sym.begin(), sym.end(), sym.begin(), ::toupper);
     std::vector<uint256> storedSymbolsTxHashes;
-    if (txdb.ReadNTP1TxsWithTokenSymbol(sym, storedSymbolsTxHashes)) {
+    if (txdb.ReadBFXTTxsWithTokenSymbol(sym, storedSymbolsTxHashes)) {
         for (const uint256& h : storedSymbolsTxHashes) {
             if (!IsTxInMainChain(h)) {
                 continue;
             }
-            auto pair = std::make_pair(CTransaction::FetchTxFromDisk(h), NTP1Transaction());
-            FetchNTP1TxFromDisk(pair, txdb, false);
+            auto pair = std::make_pair(CTransaction::FetchTxFromDisk(h), BFXTTransaction());
+            FetchBFXTTxFromDisk(pair, txdb, false);
             std::string storedSymbol = pair.second.getTokenSymbolIfIssuance();
             // blacklisted tokens can be duplicated, since they won't be used ever again
             if (IsIssuedTokenBlacklisted(pair)) {
@@ -417,14 +417,14 @@ void AssertNTP1TokenNameIsNotAlreadyInMainChain(std::string sym, const uint256& 
     }
 }
 
-void AssertNTP1TokenNameIsNotAlreadyInMainChain(const NTP1Transaction& ntp1tx, CTxDB& txdb)
+void AssertBFXTTokenNameIsNotAlreadyInMainChain(const BFXTTransaction& bfxttx, CTxDB& txdb)
 {
-    if (ntp1tx.getTxType() == NTP1TxType_ISSUANCE) {
-        std::string sym = ntp1tx.getTokenSymbolIfIssuance();
-        AssertNTP1TokenNameIsNotAlreadyInMainChain(sym, ntp1tx.getTxHash(), txdb);
-    } else if (ntp1tx.getTxType() == NTP1TxType_UNKNOWN) {
+    if (bfxttx.getTxType() == BFXTTxType_ISSUANCE) {
+        std::string sym = bfxttx.getTokenSymbolIfIssuance();
+        AssertBFXTTokenNameIsNotAlreadyInMainChain(sym, bfxttx.getTxHash(), txdb);
+    } else if (bfxttx.getTxType() == BFXTTxType_UNKNOWN) {
         throw std::runtime_error("Attempted to " + std::string(__func__) +
-                                 " on an uninitialized NTP1 transaction");
+                                 " on an uninitialized BFXT transaction");
     }
 }
 
@@ -492,7 +492,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction& tx, bool* pfMissingInput
 
         MapPrevTx                                                           mapInputs;
         map<uint256, CTxIndex>                                              mapUnused;
-        map<uint256, std::vector<std::pair<CTransaction, NTP1Transaction>>> mapUnused2;
+        map<uint256, std::vector<std::pair<CTransaction, BFXTTransaction>>> mapUnused2;
         bool                                                                fInvalid = false;
         if (!tx.FetchInputs(txdb, mapUnused, false, false, mapInputs, fInvalid)) {
             if (fInvalid)
@@ -552,25 +552,25 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction& tx, bool* pfMissingInput
                          hash.ToString().substr(0, 10).c_str());
         }
 
-        if (PassedFirstValidNTP1Tx(nBestHeight, fTestNet) &&
+        if (PassedFirstValidBFXTTx(nBestHeight, fTestNet) &&
             GetNetForks().isForkActivated(NetworkFork::NETFORK__3_TACHYON)) {
             try {
-                std::vector<std::pair<CTransaction, NTP1Transaction>> inputsTxs =
-                    NTP1Transaction::StdFetchedInputTxsToNTP1(tx, mapInputs, txdb, false, mapUnused2,
+                std::vector<std::pair<CTransaction, BFXTTransaction>> inputsTxs =
+                    BFXTTransaction::StdFetchedInputTxsToBFXT(tx, mapInputs, txdb, false, mapUnused2,
                                                               mapUnused);
-                NTP1Transaction ntp1tx;
-                ntp1tx.readNTP1DataFromTx(tx, inputsTxs);
+                BFXTTransaction bfxttx;
+                bfxttx.readBFXTDataFromTx(tx, inputsTxs);
                 if (EnableEnforceUniqueTokenSymbols()) {
-                    AssertNTP1TokenNameIsNotAlreadyInMainChain(ntp1tx, txdb);
+                    AssertBFXTTokenNameIsNotAlreadyInMainChain(bfxttx, txdb);
                 }
             } catch (std::exception& ex) {
-                printf("AcceptToMemoryPool: An invalid NTP1 transaction was submitted to the memory "
+                printf("AcceptToMemoryPool: An invalid BFXT transaction was submitted to the memory "
                        "pool; an exception was "
                        "thrown: %s\n",
                        ex.what());
                 return false;
             } catch (...) {
-                printf("AcceptToMemoryPool: An invalid NTP1 transaction was submitted to the memory "
+                printf("AcceptToMemoryPool: An invalid BFXT transaction was submitted to the memory "
                        "pool; an unknown "
                        "exception was "
                        "thrown.");
@@ -971,107 +971,107 @@ CDiskTxPos CreateFakeSpentTxPos(const uint256& blockhash)
     return fakeTxPos;
 }
 
-bool RecoverNTP1TxInDatabase(const CTransaction& tx, CTxDB& txdb, bool recoveryProtection,
+bool RecoverBFXTTxInDatabase(const CTransaction& tx, CTxDB& txdb, bool recoveryProtection,
                              unsigned recurseDepth)
 {
-    printf("Recovering NTP1 transaction in database: %s\n", tx.GetHash().ToString().c_str());
+    printf("Recovering BFXT transaction in database: %s\n", tx.GetHash().ToString().c_str());
 
     // prevent recursively attempting to recover the same transactions again and again
 
-    if (recoveryProtection && UnrecoverableNTP1Txs.find(tx.GetHash()) != UnrecoverableNTP1Txs.end()) {
+    if (recoveryProtection && UnrecoverableBFXTTxs.find(tx.GetHash()) != UnrecoverableBFXTTxs.end()) {
         printf("Will not recover transaction %s; it was marked for non-recovery. Restart to attempt to "
                "recover again.\n",
                tx.GetHash().ToString().c_str());
         return false;
     }
 
-    std::vector<std::pair<CTransaction, NTP1Transaction>> ntp1inputs;
+    std::vector<std::pair<CTransaction, BFXTTransaction>> bfxtinputs;
     try {
-        ntp1inputs = NTP1Transaction::GetAllNTP1InputsOfTx(tx, txdb, recoveryProtection);
+        bfxtinputs = BFXTTransaction::GetAllBFXTInputsOfTx(tx, txdb, recoveryProtection);
     } catch (std::exception& ex) {
-        printf("Error: Attempting to recursively recover the inputs. Failed to recover NTP1 "
+        printf("Error: Attempting to recursively recover the inputs. Failed to recover BFXT "
                "transaction: %s; with error: %s\n",
                tx.GetHash().ToString().c_str(), ex.what());
-        ntp1inputs.clear();
+        bfxtinputs.clear();
         for (const auto& in : tx.vin) {
             CTransaction inputTx;
             try {
                 inputTx = CTransaction::FetchTxFromDisk(in.prevout.hash, txdb);
                 bool anyInputBeforeWrongBlockHeights =
-                    !PassedFirstValidNTP1Tx(GetTxBlockHeight(inputTx.GetHash()), fTestNet);
-                bool isNTP1 = NTP1Transaction::IsTxNTP1(&inputTx);
-                if (anyInputBeforeWrongBlockHeights && isNTP1) {
-                    printf("Error: cannot recover transaction with hash %s; the NTP1 input of this "
+                    !PassedFirstValidBFXTTx(GetTxBlockHeight(inputTx.GetHash()), fTestNet);
+                bool isBFXT = BFXTTransaction::IsTxBFXT(&inputTx);
+                if (anyInputBeforeWrongBlockHeights && isBFXT) {
+                    printf("Error: cannot recover transaction with hash %s; the BFXT input of this "
                            "transaction %s happened before the allowed limit.\n",
                            tx.GetHash().ToString().c_str(), inputTx.GetHash().ToString().c_str());
                     if (recoveryProtection) {
-                        UnrecoverableNTP1Txs.insert(tx.GetHash());
+                        UnrecoverableBFXTTxs.insert(tx.GetHash());
                     }
                     return false;
                 }
             } catch (std::exception& exIn) {
                 printf("Error: Failed to retrieve standard bfx tranasction %s; this happened in the "
-                       "context of recovering the NTP1 transaction: %s\n, making recovery not "
+                       "context of recovering the BFXT transaction: %s\n, making recovery not "
                        "possible. Error given: %s\n",
                        tx.GetHash().ToString().c_str(), in.prevout.hash.ToString().c_str(), exIn.what());
                 if (recoveryProtection) {
-                    UnrecoverableNTP1Txs.insert(tx.GetHash());
+                    UnrecoverableBFXTTxs.insert(tx.GetHash());
                 }
                 return false;
             }
-            std::pair<CTransaction, NTP1Transaction> inputTxPair =
-                std::make_pair(inputTx, NTP1Transaction());
-            FetchNTP1TxFromDisk(inputTxPair, txdb, recurseDepth);
-            ntp1inputs.push_back(inputTxPair);
+            std::pair<CTransaction, BFXTTransaction> inputTxPair =
+                std::make_pair(inputTx, BFXTTransaction());
+            FetchBFXTTxFromDisk(inputTxPair, txdb, recurseDepth);
+            bfxtinputs.push_back(inputTxPair);
         }
     }
     try {
-        for (const auto in : ntp1inputs) {
+        for (const auto in : bfxtinputs) {
             bool anyInputBeforeWrongBlockHeights =
-                !PassedFirstValidNTP1Tx(GetTxBlockHeight(in.first.GetHash()), fTestNet);
-            bool isNTP1 = NTP1Transaction::IsTxNTP1(&in.first);
-            if (anyInputBeforeWrongBlockHeights && isNTP1) {
-                printf("One of the inputs of the NTP1 transaction %s, which is %s, is bofore the "
+                !PassedFirstValidBFXTTx(GetTxBlockHeight(in.first.GetHash()), fTestNet);
+            bool isBFXT = BFXTTransaction::IsTxBFXT(&in.first);
+            if (anyInputBeforeWrongBlockHeights && isBFXT) {
+                printf("One of the inputs of the BFXT transaction %s, which is %s, is bofore the "
                        "allowed block height. "
                        "This cannot be recovered.\n",
                        tx.GetHash().ToString().c_str(), in.first.GetHash().ToString().c_str());
                 if (recoveryProtection) {
-                    UnrecoverableNTP1Txs.insert(tx.GetHash());
+                    UnrecoverableBFXTTxs.insert(tx.GetHash());
                 }
                 return false;
             }
         }
-        NTP1Transaction ntp1tx;
-        ntp1tx.readNTP1DataFromTx(tx, ntp1inputs);
-        WriteNTP1TxToDbAndDisk(ntp1tx, txdb);
+        BFXTTransaction bfxttx;
+        bfxttx.readBFXTDataFromTx(tx, bfxtinputs);
+        WriteBFXTTxToDbAndDisk(bfxttx, txdb);
         printf("Recovering transation: %s is done successfully.\n", tx.GetHash().ToString().c_str());
     } catch (std::exception& ex) {
-        printf("Error: Failed to retrieve read NTP1 transaction while attempting to recover NTP1 "
+        printf("Error: Failed to retrieve read BFXT transaction while attempting to recover BFXT "
                "transaction %s; Error: %s\n",
                tx.GetHash().ToString().c_str(), ex.what());
         if (recoveryProtection) {
-            UnrecoverableNTP1Txs.insert(tx.GetHash());
+            UnrecoverableBFXTTxs.insert(tx.GetHash());
         }
         return false;
     }
     return true;
 }
 
-void FetchNTP1TxFromDisk(std::pair<CTransaction, NTP1Transaction>& txPair, CTxDB& txdb,
+void FetchBFXTTxFromDisk(std::pair<CTransaction, BFXTTransaction>& txPair, CTxDB& txdb,
                          bool /*recoverProtection*/, unsigned /*recurseDepth*/)
 {
-    if (!NTP1Transaction::IsTxNTP1(&txPair.first)) {
+    if (!BFXTTransaction::IsTxBFXT(&txPair.first)) {
         return;
     }
-    if (!txdb.ReadNTP1Tx(txPair.first.GetHash(), txPair.second)) {
-        //        printf("Unable to read NTP1 transaction from db: %s\n",
+    if (!txdb.ReadBFXTTx(txPair.first.GetHash(), txPair.second)) {
+        //        printf("Unable to read BFXT transaction from db: %s\n",
         //               txPair.first.GetHash().ToString().c_str());
         //        if (recurseDepth < 32) {
-        //            if (RecoverNTP1TxInDatabase(txPair.first, txdb, recoverProtection, recurseDepth +
+        //            if (RecoverBFXTTxInDatabase(txPair.first, txdb, recoverProtection, recurseDepth +
         //            1)) {
-        //                FetchNTP1TxFromDisk(txPair, txdb, recurseDepth + 1);
+        //                FetchBFXTTxFromDisk(txPair, txdb, recurseDepth + 1);
         //            } else {
-        //                printf("Error: Failed to retrieve (and recover) NTP1 transaction %s.\n",
+        //                printf("Error: Failed to retrieve (and recover) BFXT transaction %s.\n",
         //                       txPair.first.GetHash().ToString().c_str());
         //            }
         //        } else {
@@ -1079,80 +1079,80 @@ void FetchNTP1TxFromDisk(std::pair<CTransaction, NTP1Transaction>& txPair, CTxDB
         //            Stopping!\n",
         //                   recurseDepth, txPair.first.GetHash().ToString().c_str());
         //        }
-        printf("Failed to fetch NTP1 transaction %s", txPair.first.GetHash().ToString().c_str());
+        printf("Failed to fetch BFXT transaction %s", txPair.first.GetHash().ToString().c_str());
         return;
     }
     txPair.second.updateDebugStrHash();
 }
 
-void WriteNTP1TxToDbAndDisk(const NTP1Transaction& ntp1tx, CTxDB& txdb)
+void WriteBFXTTxToDbAndDisk(const BFXTTransaction& bfxttx, CTxDB& txdb)
 {
-    if (ntp1tx.getTxType() == NTP1TxType_UNKNOWN) {
+    if (bfxttx.getTxType() == BFXTTxType_UNKNOWN) {
         throw std::runtime_error(
-            "Attempted to write an NTP1 transaction to database with unknown type.");
+            "Attempted to write an BFXT transaction to database with unknown type.");
     }
-    if (!txdb.WriteNTP1Tx(ntp1tx.getTxHash(), ntp1tx)) {
-        throw std::runtime_error("Unable to write NTP1 transaction to database: " +
-                                 ntp1tx.getTxHash().ToString());
+    if (!txdb.WriteBFXTTx(bfxttx.getTxHash(), bfxttx)) {
+        throw std::runtime_error("Unable to write BFXT transaction to database: " +
+                                 bfxttx.getTxHash().ToString());
     }
-    if (ntp1tx.getTxType() == NTP1TxType_ISSUANCE) {
-        if (ntp1tx.getTxInCount() <= 0) {
+    if (bfxttx.getTxType() == BFXTTxType_ISSUANCE) {
+        if (bfxttx.getTxInCount() <= 0) {
             throw std::runtime_error(
                 "Unable to check for token id blacklisting because the size of the input is zero.");
         }
-        NTP1OutPoint prevout = ntp1tx.getTxIn(0).getPrevout();
+        BFXTOutPoint prevout = bfxttx.getTxIn(0).getPrevout();
         assert(!prevout.isNull());
         std::string tokenId =
-            ntp1tx.getTokenIdIfIssuance(prevout.getHash().ToString(), prevout.getIndex());
-        if (!IsNTP1TokenBlacklisted(tokenId)) {
-            if (!txdb.WriteNTP1TxWithTokenSymbol(ntp1tx.getTokenSymbolIfIssuance(), ntp1tx)) {
-                throw std::runtime_error("Unable to write NTP1 transaction to database: " +
-                                         ntp1tx.getTxHash().ToString());
+            bfxttx.getTokenIdIfIssuance(prevout.getHash().ToString(), prevout.getIndex());
+        if (!IsBFXTTokenBlacklisted(tokenId)) {
+            if (!txdb.WriteBFXTTxWithTokenSymbol(bfxttx.getTokenSymbolIfIssuance(), bfxttx)) {
+                throw std::runtime_error("Unable to write BFXT transaction to database: " +
+                                         bfxttx.getTxHash().ToString());
             }
         }
     }
 }
 
-void WriteNTP1TxToDiskFromRawTx(const CTransaction& tx, CTxDB& txdb)
+void WriteBFXTTxToDiskFromRawTx(const CTransaction& tx, CTxDB& txdb)
 {
-    if (PassedFirstValidNTP1Tx(nBestHeight, fTestNet)) {
-        // read previous transactions (inputs) which are necessary to validate an NTP1
+    if (PassedFirstValidBFXTTx(nBestHeight, fTestNet)) {
+        // read previous transactions (inputs) which are necessary to validate an BFXT
         // transaction
         std::string opReturnArg;
-        if (!NTP1Transaction::IsTxNTP1(&tx, &opReturnArg)) {
+        if (!BFXTTransaction::IsTxBFXT(&tx, &opReturnArg)) {
             return;
         }
 
-        std::vector<std::pair<CTransaction, NTP1Transaction>> inputsWithNTP1 =
-            NTP1Transaction::GetAllNTP1InputsOfTx(tx, txdb, true);
+        std::vector<std::pair<CTransaction, BFXTTransaction>> inputsWithBFXT =
+            BFXTTransaction::GetAllBFXTInputsOfTx(tx, txdb, true);
 
-        // write NTP1 transactions' data
-        NTP1Transaction ntp1tx;
-        ntp1tx.readNTP1DataFromTx(tx, inputsWithNTP1);
+        // write BFXT transactions' data
+        BFXTTransaction bfxttx;
+        bfxttx.readBFXTDataFromTx(tx, inputsWithBFXT);
 
-        WriteNTP1TxToDbAndDisk(ntp1tx, txdb);
+        WriteBFXTTxToDbAndDisk(bfxttx, txdb);
     }
 }
 
 void AssertIssuanceUniquenessInBlock(
     std::unordered_map<std::string, uint256>& issuedTokensSymbolsInThisBlock, CTxDB& txdb,
     const CTransaction&                                                        tx,
-    const map<uint256, std::vector<std::pair<CTransaction, NTP1Transaction>>>& mapQueuedNTP1Inputs,
+    const map<uint256, std::vector<std::pair<CTransaction, BFXTTransaction>>>& mapQueuedBFXTInputs,
     const map<uint256, CTxIndex>&                                              queuedAcceptedTxs)
 {
     std::string opRet;
-    if (NTP1Transaction::IsTxNTP1(&tx, &opRet)) {
-        auto script = NTP1Script::ParseScript(opRet);
-        if (script->getTxType() == NTP1Script::TxType_Issuance) {
-            std::vector<std::pair<CTransaction, NTP1Transaction>> inputsTxs =
-                NTP1Transaction::GetAllNTP1InputsOfTx(tx, txdb, false, mapQueuedNTP1Inputs,
+    if (BFXTTransaction::IsTxBFXT(&tx, &opRet)) {
+        auto script = BFXTScript::ParseScript(opRet);
+        if (script->getTxType() == BFXTScript::TxType_Issuance) {
+            std::vector<std::pair<CTransaction, BFXTTransaction>> inputsTxs =
+                BFXTTransaction::GetAllBFXTInputsOfTx(tx, txdb, false, mapQueuedBFXTInputs,
                                                       queuedAcceptedTxs);
 
-            NTP1Transaction ntp1tx;
-            ntp1tx.readNTP1DataFromTx(tx, inputsTxs);
-            AssertNTP1TokenNameIsNotAlreadyInMainChain(ntp1tx, txdb);
-            if (ntp1tx.getTxType() == NTP1TxType_ISSUANCE) {
-                std::string currSymbol = ntp1tx.getTokenSymbolIfIssuance();
+            BFXTTransaction bfxttx;
+            bfxttx.readBFXTDataFromTx(tx, inputsTxs);
+            AssertBFXTTokenNameIsNotAlreadyInMainChain(bfxttx, txdb);
+            if (bfxttx.getTxType() == BFXTTxType_ISSUANCE) {
+                std::string currSymbol = bfxttx.getTokenSymbolIfIssuance();
                 // make sure that case doesn't matter by converting to upper case
                 std::transform(currSymbol.begin(), currSymbol.end(), currSymbol.begin(), ::toupper);
                 if (issuedTokensSymbolsInThisBlock.find(currSymbol) !=
@@ -1161,7 +1161,7 @@ void AssertIssuanceUniquenessInBlock(
                         "The token name " + currSymbol +
                         " already exists in the block: " /* + this->GetHash().ToString()*/);
                 }
-                issuedTokensSymbolsInThisBlock.insert(std::make_pair(currSymbol, ntp1tx.getTxHash()));
+                issuedTokensSymbolsInThisBlock.insert(std::make_pair(currSymbol, bfxttx.getTxHash()));
             }
         }
     }
@@ -1220,16 +1220,16 @@ void static PruneOrphanBlocks()
     mapOrphanBlocks.erase(hash);
 }
 
-void WriteNTP1BlockTransactionsToDisk(const std::vector<CTransaction>& vtx, CTxDB& txdb)
+void WriteBFXTBlockTransactionsToDisk(const std::vector<CTransaction>& vtx, CTxDB& txdb)
 {
-    if (PassedFirstValidNTP1Tx(nBestHeight, fTestNet)) {
+    if (PassedFirstValidBFXTTx(nBestHeight, fTestNet)) {
         std::vector<CTransaction> transactions(vtx.begin(), vtx.end());
 
         // add current transactions to possible inputs to cover the case if a transaction spends an
         // output in the same block
         while (!transactions.empty()) {
             CTransaction&& tx = PopLeafTransaction(transactions);
-            WriteNTP1TxToDiskFromRawTx(tx, txdb);
+            WriteBFXTTxToDiskFromRawTx(tx, txdb);
         }
     }
 }
@@ -2826,7 +2826,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
 
 bool EnableEnforceUniqueTokenSymbols()
 {
-    //    if (PassedFirstValidNTP1Tx(nBestHeight, isTestnet)) {
+    //    if (PassedFirstValidBFXTTx(nBestHeight, isTestnet)) {
     if (GetNetForks().isForkActivated(NetworkFork::NETFORK__3_TACHYON)) {
         return true;
     } else {
@@ -2834,13 +2834,13 @@ bool EnableEnforceUniqueTokenSymbols()
     }
 }
 
-bool PassedFirstValidNTP1Tx(const int bestHeight, const bool isTestnet)
+bool PassedFirstValidBFXTTx(const int bestHeight, const bool isTestnet)
 {
     if (isTestnet) {
         // testnet past network upgrade block
         return (bestHeight >= 10313);
     } else {
-        // mainnet past first valid NTP1 txn
+        // mainnet past first valid BFXT txn
         return (bestHeight >= 157528);
     }
 }

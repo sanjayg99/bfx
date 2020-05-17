@@ -385,12 +385,12 @@ QVariant TransactionTableModel::addressColor(const TransactionRecord* wtx) const
 
 QString TransactionTableModel::formatTxAmount(const TransactionRecord* wtx, bool showUnconfirmed) const
 {
-    // count total NTP1 tokens
-    NTP1Int totalTokens = 0;
-    if (wtx->ntp1DataLoaded) {
-        for (int i = 0; i < (int)wtx->ntp1tx.getTxOutCount(); i++) {
-            for (int j = 0; j < (int)wtx->ntp1tx.getTxOut(i).tokenCount(); j++) {
-                totalTokens += wtx->ntp1tx.getTxOut(i).getToken(j).getAmount();
+    // count total BFXT tokens
+    BFXTInt totalTokens = 0;
+    if (wtx->bfxtDataLoaded) {
+        for (int i = 0; i < (int)wtx->bfxttx.getTxOutCount(); i++) {
+            for (int j = 0; j < (int)wtx->bfxttx.getTxOut(i).tokenCount(); j++) {
+                totalTokens += wtx->bfxttx.getTxOut(i).getToken(j).getAmount();
             }
         }
     }
@@ -399,7 +399,7 @@ QString TransactionTableModel::formatTxAmount(const TransactionRecord* wtx, bool
         str = BitcoinUnits::format(walletModel->getOptionsModel()->getDisplayUnit(),
                                    wtx->credit + wtx->debit);
     } else {
-        str = "NTP1";
+        str = "BFXT";
     }
     if (showUnconfirmed) {
         if (!wtx->status.countsForBalance) {
@@ -534,24 +534,24 @@ QVariant TransactionTableModel::data(const QModelIndex& index, int role) const
         return QString::fromStdString(rec->getTxID());
     case ConfirmedRole:
         return rec->status.countsForBalance;
-    case IsNTP1Role:
-        return rec->ntp1DataLoaded;
+    case IsBFXTRole:
+        return rec->bfxtDataLoaded;
     case FormattedAmountRole:
         return formatTxAmount(rec, false);
     case StatusRole:
         return rec->status.status;
-    case NTP1MetadataRole: {
+    case BFXTMetadataRole: {
         try {
-            std::string                 opRet = rec->ntp1tx.getNTP1OpReturnScriptHex();
-            std::shared_ptr<NTP1Script> s     = NTP1Script::ParseScript(opRet);
+            std::string                 opRet = rec->bfxttx.getBFXTOpReturnScriptHex();
+            std::shared_ptr<BFXTScript> s     = BFXTScript::ParseScript(opRet);
             return QString::fromStdString(s->GetMetadataAsString(s.get(), rec->tx));
         } catch (...) {
         }
     }
-    case NTP1MetadataHexRole: {
+    case BFXTMetadataHexRole: {
         try {
-            std::string                 opRet = rec->ntp1tx.getNTP1OpReturnScriptHex();
-            std::shared_ptr<NTP1Script> s     = NTP1Script::ParseScript(opRet);
+            std::string                 opRet = rec->bfxttx.getBFXTOpReturnScriptHex();
+            std::shared_ptr<BFXTScript> s     = BFXTScript::ParseScript(opRet);
             return QString::fromStdString(
                 boost::algorithm::hex(s->GetMetadataAsString(s.get(), rec->tx)));
         } catch (...) {
@@ -559,7 +559,7 @@ QVariant TransactionTableModel::data(const QModelIndex& index, int role) const
     }
     case OpReturnHexRole:
         try {
-            return QString::fromStdString(rec->ntp1tx.getNTP1OpReturnScriptHex());
+            return QString::fromStdString(rec->bfxttx.getBFXTOpReturnScriptHex());
         } catch (...) {
         }
     }

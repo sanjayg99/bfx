@@ -30,13 +30,13 @@ QString TransactionDesc::FormatTxStatus(const CWalletTx& wtx)
     }
 }
 
-std::string FormatNTP1TokenAmount(const NTP1TokenTxData& token)
+std::string FormatBFXTTokenAmount(const BFXTTokenTxData& token)
 {
     return ::ToString(token.getAmount()) + " " + token.getTokenSymbol() +
            " (Token ID: " + token.getTokenId() + ")";
 }
 
-std::string FormatNTP1TokenAmount(const TokenMinimalData& token)
+std::string FormatBFXTTokenAmount(const TokenMinimalData& token)
 {
     return ::ToString(token.amount) + " " + token.tokenName + " (Token ID: " + token.tokenId + ")";
 }
@@ -79,7 +79,7 @@ QString TransactionDesc::toHTML(CWallet* wallet, CWalletTx& wtx)
         if (nNet > 0) {
             // Credit
             for (const CTxOut& txout : wtx.vout) {
-                if (NTP1Transaction::IsTxOutputOpRet(&txout)) {
+                if (BFXTTransaction::IsTxOutputOpRet(&txout)) {
                     continue;
                 }
                 if (wallet->IsMine(txout)) {
@@ -103,18 +103,18 @@ QString TransactionDesc::toHTML(CWallet* wallet, CWalletTx& wtx)
         }
     }
 
-    bool successInRetrievingNTP1Tx = true;
+    bool successInRetrievingBFXTTx = true;
 
-    NTP1Transaction ntp1tx;
+    BFXTTransaction bfxttx;
     try {
-        std::vector<std::pair<CTransaction, NTP1Transaction>> ntp1inputs =
-            NTP1Transaction::GetAllNTP1InputsOfTx(wtx, false);
-        ntp1tx.readNTP1DataFromTx(wtx, ntp1inputs);
+        std::vector<std::pair<CTransaction, BFXTTransaction>> bfxtinputs =
+            BFXTTransaction::GetAllBFXTInputsOfTx(wtx, false);
+        bfxttx.readBFXTDataFromTx(wtx, bfxtinputs);
     } catch (std::exception& ex) {
-        printf("(This doesn't have to be an error if the tx is not NTP1). For transaction details, "
-               "failed to retrieve NTP1 data of transaction: %s. Error: %s",
+        printf("(This doesn't have to be an error if the tx is not BFXT). For transaction details, "
+               "failed to retrieve BFXT data of transaction: %s. Error: %s",
                wtx.GetHash().ToString().c_str(), ex.what());
-        successInRetrievingNTP1Tx = false;
+        successInRetrievingBFXTTx = false;
     }
 
     //
@@ -139,7 +139,7 @@ QString TransactionDesc::toHTML(CWallet* wallet, CWalletTx& wtx)
         //
         int64_t nUnmatured = 0;
         for (const CTxOut& txout : wtx.vout) {
-            if (NTP1Transaction::IsTxOutputOpRet(&txout)) {
+            if (BFXTTransaction::IsTxOutputOpRet(&txout)) {
                 continue;
             }
             nUnmatured += wallet->GetCredit(txout);
@@ -158,22 +158,22 @@ QString TransactionDesc::toHTML(CWallet* wallet, CWalletTx& wtx)
         //
         strHTML += "<b>" + tr("Credit") + ":</b> " +
                    BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, nNet) + "<br>";
-        if (successInRetrievingNTP1Tx) {
+        if (successInRetrievingBFXTTx) {
             // get token amounts in outputs of the transaction
             std::unordered_map<std::string, TokenMinimalData> outputsTokens =
-                NTP1Transaction::CalculateTotalOutputTokens(ntp1tx);
+                BFXTTransaction::CalculateTotalOutputTokens(bfxttx);
 
             // calculate total tokens of all kinds to see if there's any tokens involved in the
             // transaction
-            NTP1Int totalOutputsTokens =
-                std::accumulate(outputsTokens.begin(), outputsTokens.end(), NTP1Int(0),
-                                [](NTP1Int currRes, const std::pair<std::string, TokenMinimalData>& t) {
+            BFXTInt totalOutputsTokens =
+                std::accumulate(outputsTokens.begin(), outputsTokens.end(), BFXTInt(0),
+                                [](BFXTInt currRes, const std::pair<std::string, TokenMinimalData>& t) {
                                     return currRes + t.second.amount;
                                 });
             if (totalOutputsTokens != 0) {
                 for (const auto& in : outputsTokens) {
-                    strHTML += "<b>" + tr("NTP1 credit") + ":</b> " +
-                               QString::fromStdString(FormatNTP1TokenAmount(in.second)) + "<br>";
+                    strHTML += "<b>" + tr("BFXT credit") + ":</b> " +
+                               QString::fromStdString(FormatBFXTTokenAmount(in.second)) + "<br>";
                 }
             }
         }
@@ -185,7 +185,7 @@ QString TransactionDesc::toHTML(CWallet* wallet, CWalletTx& wtx)
 
         bool fAllToMe = true;
         for (const CTxOut& txout : wtx.vout) {
-            if (NTP1Transaction::IsTxOutputOpRet(&txout)) {
+            if (BFXTTransaction::IsTxOutputOpRet(&txout)) {
                 continue;
             }
             fAllToMe = fAllToMe && wallet->IsMine(txout);
@@ -197,7 +197,7 @@ QString TransactionDesc::toHTML(CWallet* wallet, CWalletTx& wtx)
             //
             for (int i = 0; i < (int)wtx.vout.size(); i++) {
                 const CTxOut& txout = wtx.vout[i];
-                if (NTP1Transaction::IsTxOutputOpRet(&txout)) {
+                if (BFXTTransaction::IsTxOutputOpRet(&txout)) {
                     continue;
                 }
                 if (wallet->IsMine(txout))
@@ -219,11 +219,11 @@ QString TransactionDesc::toHTML(CWallet* wallet, CWalletTx& wtx)
                 strHTML += "<b>" + tr("Debit") + ":</b> " +
                            BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, -txout.nValue) + "<br>";
 
-                if (successInRetrievingNTP1Tx && i < (int)ntp1tx.getTxOutCount()) {
-                    for (int j = 0; j < (int)ntp1tx.getTxOut(i).tokenCount(); j++) {
-                        const NTP1TokenTxData& token = ntp1tx.getTxOut(i).getToken(j);
-                        strHTML += "<b>" + tr("NTP1 Debit") + ":</b> " +
-                                   QString::fromStdString(FormatNTP1TokenAmount(token)) + "<br>";
+                if (successInRetrievingBFXTTx && i < (int)bfxttx.getTxOutCount()) {
+                    for (int j = 0; j < (int)bfxttx.getTxOut(i).tokenCount(); j++) {
+                        const BFXTTokenTxData& token = bfxttx.getTxOut(i).getToken(j);
+                        strHTML += "<b>" + tr("BFXT Debit") + ":</b> " +
+                                   QString::fromStdString(FormatBFXTTokenAmount(token)) + "<br>";
                     }
                 }
             }
@@ -236,22 +236,22 @@ QString TransactionDesc::toHTML(CWallet* wallet, CWalletTx& wtx)
                            BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, -nValue) + "<br>";
                 strHTML += "<b>" + tr("Credit") + ":</b> " +
                            BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, nValue) + "<br>";
-                if (successInRetrievingNTP1Tx) {
+                if (successInRetrievingBFXTTx) {
                     // get token amounts in outputs of the transaction
                     std::unordered_map<std::string, TokenMinimalData> outputsTokens =
-                        NTP1Transaction::CalculateTotalOutputTokens(ntp1tx);
+                        BFXTTransaction::CalculateTotalOutputTokens(bfxttx);
 
                     // calculate total tokens of all kinds to see if there's any tokens involved in the
                     // transaction
-                    NTP1Int totalOutputsTokens = std::accumulate(
-                        outputsTokens.begin(), outputsTokens.end(), NTP1Int(0),
-                        [](NTP1Int currRes, const std::pair<std::string, TokenMinimalData>& t) {
+                    BFXTInt totalOutputsTokens = std::accumulate(
+                        outputsTokens.begin(), outputsTokens.end(), BFXTInt(0),
+                        [](BFXTInt currRes, const std::pair<std::string, TokenMinimalData>& t) {
                             return currRes + t.second.amount;
                         });
                     if (totalOutputsTokens != 0) {
                         for (const auto& in : outputsTokens) {
-                            strHTML += "<b>" + tr("NTP1 credit") + ":</b> " +
-                                       QString::fromStdString(FormatNTP1TokenAmount(in.second)) + "<br>";
+                            strHTML += "<b>" + tr("BFXT credit") + ":</b> " +
+                                       QString::fromStdString(FormatBFXTTokenAmount(in.second)) + "<br>";
                         }
                     }
                 }
@@ -272,7 +272,7 @@ QString TransactionDesc::toHTML(CWallet* wallet, CWalletTx& wtx)
                                "<br>";
             }
             for (const CTxOut& txout : wtx.vout) {
-                if (NTP1Transaction::IsTxOutputOpRet(&txout)) {
+                if (BFXTTransaction::IsTxOutputOpRet(&txout)) {
                     continue;
                 }
                 if (wallet->IsMine(txout))
@@ -320,18 +320,18 @@ QString TransactionDesc::toHTML(CWallet* wallet, CWalletTx& wtx)
                            "<br>";
         for (int i = 0; i < (int)wtx.vout.size(); i++) {
             const CTxOut& txout = wtx.vout[i];
-            if (NTP1Transaction::IsTxOutputOpRet(&txout)) {
+            if (BFXTTransaction::IsTxOutputOpRet(&txout)) {
                 continue;
             }
             if (wallet->IsMine(txout)) {
                 strHTML += "<b>" + tr("Credit") + ":</b> " +
                            BitcoinUnits::formatWithUnit(BitcoinUnits::BTC, wallet->GetCredit(txout)) +
                            "<br>";
-                if (successInRetrievingNTP1Tx && i < (int)ntp1tx.getTxOutCount()) {
-                    for (int j = 0; j < (int)ntp1tx.getTxOut(i).tokenCount(); j++) {
-                        const NTP1TokenTxData& token = ntp1tx.getTxOut(i).getToken(j);
-                        strHTML += "<b>" + tr("NTP1 Credit") + ":</b> " +
-                                   QString::fromStdString(FormatNTP1TokenAmount(token)) + "<br>";
+                if (successInRetrievingBFXTTx && i < (int)bfxttx.getTxOutCount()) {
+                    for (int j = 0; j < (int)bfxttx.getTxOut(i).tokenCount(); j++) {
+                        const BFXTTokenTxData& token = bfxttx.getTxOut(i).getToken(j);
+                        strHTML += "<b>" + tr("BFXT Credit") + ":</b> " +
+                                   QString::fromStdString(FormatBFXTTokenAmount(token)) + "<br>";
                     }
                 }
             }

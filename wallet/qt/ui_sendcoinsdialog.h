@@ -9,7 +9,7 @@
 #ifndef UI_SENDCOINSDIALOG_H
 #define UI_SENDCOINSDIALOG_H
 
-#include "ntp1/ntp1createmetadatadialog.h"
+#include "bfxt/bfxtcreatemetadatadialog.h"
 #include <QtCore/QVariant>
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
@@ -86,7 +86,7 @@ public:
     QLabel*                   labelBalance;
     QSpacerItem*              horizontalSpacer;
     QPushButton*              sendButton;
-    NTP1CreateMetadataDialog* editMetadataDialog;
+    BFXTCreateMetadataDialog* editMetadataDialog;
 
     void setupUi(QDialog* SendCoinsDialog)
     {
@@ -502,7 +502,7 @@ public:
 
         QMetaObject::connectSlotsByName(SendCoinsDialog);
 
-        editMetadataDialog = new NTP1CreateMetadataDialog(SendCoinsDialog);
+        editMetadataDialog = new BFXTCreateMetadataDialog(SendCoinsDialog);
     } // setupUi
 
     void retranslateUi(QDialog* SendCoinsDialog)
@@ -555,7 +555,7 @@ public:
 #endif // QT_NO_TOOLTIP
         addButton->setText(QApplication::translate("SendCoinsDialog", "Add &Recipient", Q_NULLPTR));
         editMetadataButton->setText(
-            QApplication::translate("SendCoinsDialog", "Edit NTP1 &Metadata", Q_NULLPTR));
+            QApplication::translate("SendCoinsDialog", "Edit BFXT &Metadata", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
         clearButton->setToolTip(
             QApplication::translate("SendCoinsDialog", "Remove all transaction fields", Q_NULLPTR));

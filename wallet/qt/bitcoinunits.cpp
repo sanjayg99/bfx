@@ -19,7 +19,7 @@ bool BitcoinUnits::valid(int unit)
     case BTC:
     case mBTC:
     case uBTC:
-    case NTP1:
+    case BFXT:
         return true;
     default:
         return false;
@@ -35,7 +35,7 @@ QString BitcoinUnits::name(int unit)
         return QString("mBFX");
     case uBTC:
         return QString::fromUtf8("μBFX");
-    case NTP1:
+    case BFXT:
         return QString("");
     default:
         return QString("???");
@@ -51,8 +51,8 @@ QString BitcoinUnits::description(int unit)
         return QString("Milli-BFX (1 / 1,000)");
     case uBTC:
         return QString("Micro-BFX (1 / 1,000,000)");
-    case NTP1:
-        return QString("NTP1");
+    case BFXT:
+        return QString("BFXT");
     default:
         return QString("???");
     }
@@ -67,7 +67,7 @@ qint64 BitcoinUnits::factor(int unit)
         return 100000;
     case uBTC:
         return 100;
-    case NTP1:
+    case BFXT:
         return 1;
     default:
         return 100000000;
@@ -83,8 +83,8 @@ int BitcoinUnits::amountDigits(int unit)
         return 11; // 21,000,000,000
     case uBTC:
         return 14; // 21,000,000,000,000
-    case NTP1:
-        return 17; // Any NTP1 amount that's less that int64_t in size
+    case BFXT:
+        return 17; // Any BFXT amount that's less that int64_t in size
     default:
         return 0;
     }
@@ -99,7 +99,7 @@ int BitcoinUnits::decimals(int unit)
         return 5;
     case uBTC:
         return 2;
-    case NTP1:
+    case BFXT:
         return 0;
     default:
         return 0;

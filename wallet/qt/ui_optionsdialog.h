@@ -88,7 +88,7 @@ public:
     QPushButton*        applyButton;
     QWidget*            tabNTPOptions;
     QGridLayout*        tabNTPOptionsLayout;
-    QPushButton*        clearNTP1DataCacheButton;
+    QPushButton*        clearBFXTDataCacheButton;
     QPushButton*        scheduleWalletRescanButton;
     QPushButton*        scheduleWalletResyncButton;
 
@@ -329,21 +329,21 @@ public:
         statusLabel->setTextFormat(Qt::PlainText);
         statusLabel->setWordWrap(true);
 
-        /////// NTP1 options tab
+        /////// BFXT options tab
         tabNTPOptions = new QWidget();
         tabNTPOptions->setObjectName(QStringLiteral("tabNTPOptions"));
         tabWidget->addTab(tabNTPOptions, QString("N&TP1 Options"));
         tabNTPOptionsLayout = new QGridLayout;
         tabNTPOptions->setLayout(tabNTPOptionsLayout);
-        clearNTP1DataCacheButton = new QPushButton(tabNTPOptions);
-        clearNTP1DataCacheButton->setText("Clear NTP1 data cache");
-        clearNTP1DataCacheButton->setToolTip(
-            "The NTP1 wallet data is cached in your data directory to avoid exhausting resources with "
+        clearBFXTDataCacheButton = new QPushButton(tabNTPOptions);
+        clearBFXTDataCacheButton->setText("Clear BFXT data cache");
+        clearBFXTDataCacheButton->setToolTip(
+            "The BFXT wallet data is cached in your data directory to avoid exhausting resources with "
             "rescans. Clicking this button triggers the deletion of the cache and restarting the scan. "
-            "Use this if you see wrong information about your NTP1 tokens. DO NOT click this just "
+            "Use this if you see wrong information about your BFXT tokens. DO NOT click this just "
             "because you are waiting for a transaction, this does not accelerate retrieving "
             "transactions.");
-        tabNTPOptionsLayout->addWidget(clearNTP1DataCacheButton);
+        tabNTPOptionsLayout->addWidget(clearBFXTDataCacheButton);
         tabNTPOptionsLayout->setAlignment(Qt::AlignTop);
         ///////
 

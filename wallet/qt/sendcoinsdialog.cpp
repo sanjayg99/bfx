@@ -22,8 +22,8 @@
 #include <QScrollBar>
 #include <QTextDocument>
 
-#include "ntp1/ntp1tokenlistmodel.h"
-#include "ntp1/ntp1tools.h"
+#include "bfxt/bfxttokenlistmodel.h"
+#include "bfxt/bfxttools.h"
 
 SendCoinsDialog::SendCoinsDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::SendCoinsDialog), model(0)
@@ -143,10 +143,10 @@ void SendCoinsDialog::on_sendButton_clicked()
         return;
     }
 
-    NTP1TokenListModel*           ntp1TokenListModel = ntp1TokenListModelInstance.load();
-    boost::shared_ptr<NTP1Wallet> ntp1wallet;
-    if (ntp1TokenListModel) {
-        ntp1wallet = ntp1TokenListModel->getCurrentWallet();
+    BFXTTokenListModel*           bfxtTokenListModel = bfxtTokenListModelInstance.load();
+    boost::shared_ptr<BFXTWallet> bfxtwallet;
+    if (bfxtTokenListModel) {
+        bfxtwallet = bfxtTokenListModel->getCurrentWallet();
     }
 
     // Format confirmation message
@@ -159,20 +159,20 @@ void SendCoinsDialog::on_sendButton_clicked()
 
     fNewRecipientAllowed = false;
 
-    // allow metadata only with NTP1 transactions
-    RawNTP1MetadataBeforeSend ntp1metadata;
+    // allow metadata only with BFXT transactions
+    RawBFXTMetadataBeforeSend bfxtmetadata;
     {
         bool allTokensNebl = true;
         for (const auto& r : recipients) {
-            bool isNebl   = (r.tokenId.toStdString() == NTP1SendTxData::NEBL_TOKEN_ID);
+            bool isNebl   = (r.tokenId.toStdString() == BFXTSendTxData::NEBL_TOKEN_ID);
             allTokensNebl = allTokensNebl && isNebl;
         }
 
         if (allTokensNebl && ui->editMetadataDialog->jsonDataExists()) {
             QMessageBox::warning(
-                this, "Metadata in non-NTP1 transaction",
-                "We found metadata set. NTP1 metadata requires an NTP1 transaction. Please "
-                "include one or more NTP1 tokens in your transaction.");
+                this, "Metadata in non-BFXT transaction",
+                "We found metadata set. BFXT metadata requires an BFXT transaction. Please "
+                "include one or more BFXT tokens in your transaction.");
             ui->editMetadataButton->setStyleSheet(STYLE_INVALID);
             return;
         }
@@ -180,7 +180,7 @@ void SendCoinsDialog::on_sendButton_clicked()
         if (ui->editMetadataDialog->jsonDataExists()) {
             if (ui->editMetadataDialog->jsonDataValid()) {
                 json_spirit::Object obj = ui->editMetadataDialog->getJsonData();
-                ntp1metadata.metadata   = json_spirit::write(obj);
+                bfxtmetadata.metadata   = json_spirit::write(obj);
                 if (ui->editMetadataDialog->encryptData()) {
                     assert(!recipients.empty());
                     std::string recipientAddress = recipients.at(0).address.toStdString();
@@ -197,11 +197,11 @@ void SendCoinsDialog::on_sendButton_clicked()
                             return;
                         }
                     }
-                    ntp1metadata.encrypt = true;
+                    bfxtmetadata.encrypt = true;
                 }
             } else {
                 QMessageBox::warning(this, "Invalid json data",
-                                     "Invalid NTP1 metadata found. Either clear it or fix it");
+                                     "Invalid BFXT metadata found. Either clear it or fix it");
                 ui->editMetadataButton->setStyleSheet(STYLE_INVALID);
                 return;
             }
@@ -227,10 +227,10 @@ void SendCoinsDialog::on_sendButton_clicked()
     WalletModel::SendCoinsReturn sendstatus;
 
     if (!model->getOptionsModel() || !model->getOptionsModel()->getCoinControlFeatures())
-        sendstatus = model->sendCoins(recipients, ntp1wallet, ntp1metadata);
+        sendstatus = model->sendCoins(recipients, bfxtwallet, bfxtmetadata);
     else
         sendstatus =
-            model->sendCoins(recipients, ntp1wallet, ntp1metadata, CoinControlDialog::coinControl);
+            model->sendCoins(recipients, bfxtwallet, bfxtmetadata, CoinControlDialog::coinControl);
 
     switch (sendstatus.status) {
     case WalletModel::InvalidAddress:
@@ -274,75 +274,75 @@ void SendCoinsDialog::on_sendButton_clicked()
         break;
     case WalletModel::Aborted: // User aborted, nothing to do
         break;
-    case WalletModel::AddressContainsNTP1Tokens:
+    case WalletModel::AddressContainsBFXTTokens:
         QMessageBox::warning(
-            this, tr("Send Coins - NTP1 tokens problem"),
-            "Error: One of the addresses chosen as an input for this transaction contains NTP1 tokens. "
-            "You should NOT send BFX from these addresses or the NTP1 tokens could be permanently "
+            this, tr("Send Coins - BFXT tokens problem"),
+            "Error: One of the addresses chosen as an input for this transaction contains BFXT tokens. "
+            "You should NOT send BFX from these addresses or the BFXT tokens could be permanently "
             "burned. "
-            "This address contains NTP1 tokens: " +
+            "This address contains BFXT tokens: " +
                 sendstatus.address +
                 "\n\n"
                 "You have the following options:\n"
-                "1. Use coin control and choose addresses that do not contain NTP1 tokens.\n"
-                "2. Go to the Orion wallet and sweep the NTP1 tokens to Orion.\n"
-                "3. Go to options, and disable this check. Please be aware that your NTP1 tokens WILL "
+                "1. Use coin control and choose addresses that do not contain BFXT tokens.\n"
+                "2. Go to the Orion wallet and sweep the BFXT tokens to Orion.\n"
+                "3. Go to options, and disable this check. Please be aware that your BFXT tokens WILL "
                 "BE DESTROYED.\n",
             QMessageBox::Ok, QMessageBox::Ok);
         break;
-    case WalletModel::AddressNTP1TokensCheckFailed:
+    case WalletModel::AddressBFXTTokensCheckFailed:
         QMessageBox::warning(
-            this, tr("Send Coins - NTP1 tokens problem"),
-            "Error: Unable to check whether your addresses contain NTP1 tokens (for address: " +
+            this, tr("Send Coins - BFXT tokens problem"),
+            "Error: Unable to check whether your addresses contain BFXT tokens (for address: " +
                 sendstatus.address +
                 ")\n"
-                "Sending BFX from an address that contains NTP1 tokens could result in those tokens "
+                "Sending BFX from an address that contains BFXT tokens could result in those tokens "
                 "being permanently burned. "
-                "Sweep your NTP1 tokens back to an Orion address using the Orion wallet. "
+                "Sweep your BFXT tokens back to an Orion address using the Orion wallet. "
                 "If you would like to proceed with this at your own risk, "
-                "please go to options and disable this NTP1 token check.",
+                "please go to options and disable this BFXT token check.",
             QMessageBox::Ok, QMessageBox::Ok);
         break;
-    case WalletModel::AddressNTP1TokensCheckFailedFailedToDecodeScriptPubKey:
-        QMessageBox::warning(this, tr("Send Coins - NTP1 tokens problem"),
-                             "Error: Unable to check whether your addresses contain NTP1 tokens "
+    case WalletModel::AddressBFXTTokensCheckFailedFailedToDecodeScriptPubKey:
+        QMessageBox::warning(this, tr("Send Coins - BFXT tokens problem"),
+                             "Error: Unable to check whether your addresses contain BFXT tokens "
                              "(Decoding scriptPubKey failed) "
-                             "Sending BFX from an address that contains NTP1 tokens could result in "
+                             "Sending BFX from an address that contains BFXT tokens could result in "
                              "those tokens being permanently burned. "
-                             "Sweep your NTP1 tokens back to an Orion address using the Orion wallet. "
+                             "Sweep your BFXT tokens back to an Orion address using the Orion wallet. "
                              "If you would like to proceed with this at your own risk, "
-                             "please go to options and disable this NTP1 token check.",
+                             "please go to options and disable this BFXT token check.",
                              QMessageBox::Ok, QMessageBox::Ok);
         break;
-    case WalletModel::AddressNTP1TokensCheckFailedTxNotFound:
-        QMessageBox::warning(this, tr("Send Coins - NTP1 tokens problem"),
-                             "Error: Unable to check whether your addresses contain NTP1 tokens "
+    case WalletModel::AddressBFXTTokensCheckFailedTxNotFound:
+        QMessageBox::warning(this, tr("Send Coins - BFXT tokens problem"),
+                             "Error: Unable to check whether your addresses contain BFXT tokens "
                              "(Reference input transaction not found in the wallet) "
-                             "Sending BFX from an address that contains NTP1 tokens could result in "
+                             "Sending BFX from an address that contains BFXT tokens could result in "
                              "those tokens being permanently burned. "
-                             "Sweep your NTP1 tokens back to an Orion address using the Orion wallet. "
+                             "Sweep your BFXT tokens back to an Orion address using the Orion wallet. "
                              "If you would like to proceed with this at your own risk, "
-                             "please go to options and disable this NTP1 token check.",
+                             "please go to options and disable this BFXT token check.",
                              QMessageBox::Ok, QMessageBox::Ok);
         break;
-    case WalletModel::AddressNTP1TokensCheckFailedWrongNumberOfOutputs:
-        QMessageBox::warning(this, tr("Send Coins - NTP1 tokens problem"),
-                             "Error: Unable to check whether your addresses contain NTP1 tokens (number "
+    case WalletModel::AddressBFXTTokensCheckFailedWrongNumberOfOutputs:
+        QMessageBox::warning(this, tr("Send Coins - BFXT tokens problem"),
+                             "Error: Unable to check whether your addresses contain BFXT tokens (number "
                              "of outputs in the transaction used for input is wrong) "
-                             "Sending BFX from an address that contains NTP1 tokens could result in "
+                             "Sending BFX from an address that contains BFXT tokens could result in "
                              "those tokens being permanently burned. "
-                             "Sweep your NTP1 tokens back to an Orion address using the Orion wallet. "
+                             "Sweep your BFXT tokens back to an Orion address using the Orion wallet. "
                              "If you would like to proceed with this at your own risk, "
-                             "please go to options and disable this NTP1 token check.",
+                             "please go to options and disable this BFXT token check.",
                              QMessageBox::Ok, QMessageBox::Ok);
         break;
-    case WalletModel::EmptyNTP1TokenID:
+    case WalletModel::EmptyBFXTTokenID:
         QMessageBox::warning(this, tr("Send Coins - Empty token ID"),
                              "Error: a token in the inputs was found to have an empty token ID.",
                              QMessageBox::Ok, QMessageBox::Ok);
         break;
-    case WalletModel::NTP1TokenCalculationsFailed:
-        QMessageBox::warning(this, tr("Send Coins - NTP1 calculations failed"),
+    case WalletModel::BFXTTokenCalculationsFailed:
+        QMessageBox::warning(this, tr("Send Coins - BFXT calculations failed"),
                              "Unable to calculate reserve tokens to be spent in this transaction. " +
                                  sendstatus.msg,
                              QMessageBox::Ok, QMessageBox::Ok);
@@ -552,7 +552,7 @@ void SendCoinsDialog::updateAllTokenLists()
     for (int i = 0; i < ui->entries->count(); ++i) {
         SendCoinsEntry* entry = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(i)->widget());
         if (entry)
-            entry->updateNTP1TokensList();
+            entry->updateBFXTTokensList();
     }
 }
 

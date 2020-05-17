@@ -50,7 +50,7 @@ SOURCES += \
     key_tests.cpp         \
     mruset_tests.cpp      \
     netbase_tests.cpp     \
-    ntp1_tests.cpp        \
+    bfxt_tests.cpp        \
     pmt_tests.cpp         \
     rpc_tests.cpp         \
     script_tests.cpp      \

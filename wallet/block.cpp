@@ -532,7 +532,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, const CBlockIndexSmartPtr& pindex, bool f
     int64_t                     nValueOut    = 0;
     int64_t                     nStakeReward = 0;
 
-    std::map<uint256, std::vector<std::pair<CTransaction, NTP1Transaction>>> mapQueuedNTP1Inputs;
+    std::map<uint256, std::vector<std::pair<CTransaction, BFXTTransaction>>> mapQueuedBFXTInputs;
 
     unsigned int nSigOps = 0;
 
@@ -543,7 +543,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, const CBlockIndexSmartPtr& pindex, bool f
     for (CTransaction& tx : vtx) {
         uint256 hashTx = tx.GetHash();
 
-        std::vector<std::pair<CTransaction, NTP1Transaction>> inputsWithNTP1;
+        std::vector<std::pair<CTransaction, BFXTTransaction>> inputsWithBFXT;
 
         if (!CheckBIP30Attack(txdb, hashTx)) {
             return error(
@@ -586,21 +586,21 @@ bool CBlock::ConnectBlock(CTxDB& txdb, const CBlockIndexSmartPtr& pindex, bool f
 
             if (GetNetForks().isForkActivated(NetworkFork::NETFORK__3_TACHYON)) {
                 try {
-                    if (NTP1Transaction::IsTxNTP1(&tx)) {
+                    if (BFXTTransaction::IsTxBFXT(&tx)) {
                         // check if there are inputs already cached
-                        inputsWithNTP1 = NTP1Transaction::GetAllNTP1InputsOfTx(
-                            tx, txdb, true, mapQueuedNTP1Inputs, mapQueuedChanges);
+                        inputsWithBFXT = BFXTTransaction::GetAllBFXTInputsOfTx(
+                            tx, txdb, true, mapQueuedBFXTInputs, mapQueuedChanges);
 
-                        // write NTP1 transactions' data
-                        NTP1Transaction ntp1tx;
-                        ntp1tx.readNTP1DataFromTx(tx, inputsWithNTP1);
+                        // write BFXT transactions' data
+                        BFXTTransaction bfxttx;
+                        bfxttx.readBFXTDataFromTx(tx, inputsWithBFXT);
                     }
                 } catch (std::exception& ex) {
-                    return error("Error while verifying NTP1Transaction validity in ConnectBlock(): "
+                    return error("Error while verifying BFXTTransaction validity in ConnectBlock(): "
                                  "%s\n",
                                  ex.what());
                 } catch (...) {
-                    return error("Error while verifying NTP1Transaction validity in ConnectBlock(). "
+                    return error("Error while verifying BFXTTransaction validity in ConnectBlock(). "
                                  "Unknown exception thrown\n");
                 }
             }
@@ -608,7 +608,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, const CBlockIndexSmartPtr& pindex, bool f
             if (EnableEnforceUniqueTokenSymbols()) {
                 try {
                     AssertIssuanceUniquenessInBlock(issuedTokensSymbolsInThisBlock, txdb, tx,
-                                                    mapQueuedNTP1Inputs, mapQueuedChanges);
+                                                    mapQueuedBFXTInputs, mapQueuedChanges);
                 } catch (std::exception& ex) {
                     return error("Error while verifying the uniqueness of issued token symbol in "
                                  "ConnectBlock(): "
@@ -627,7 +627,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, const CBlockIndexSmartPtr& pindex, bool f
         }
 
         mapQueuedChanges[hashTx]          = CTxIndex(posThisTx, tx.vout.size());
-        mapQueuedNTP1Inputs[tx.GetHash()] = inputsWithNTP1;
+        mapQueuedBFXTInputs[tx.GetHash()] = inputsWithBFXT;
     }
 
     if (IsProofOfWork()) {
@@ -669,18 +669,18 @@ bool CBlock::ConnectBlock(CTxDB& txdb, const CBlockIndexSmartPtr& pindex, bool f
             return error("ConnectBlock() : UpdateTxIndex failed");
     }
 
-    // This scope does NTP1 data writing
+    // This scope does BFXT data writing
     {
         try {
-            WriteNTP1BlockTransactionsToDisk(vtx, txdb);
+            WriteBFXTBlockTransactionsToDisk(vtx, txdb);
         } catch (std::exception& ex) {
             if (GetNetForks().isForkActivated(NetworkFork::NETFORK__3_TACHYON)) {
-                return error("Unable to get NTP1 transaction written in ConnectBlock(). Error: %s\n",
+                return error("Unable to get BFXT transaction written in ConnectBlock(). Error: %s\n",
                              ex.what());
             }
         } catch (...) {
             if (GetNetForks().isForkActivated(NetworkFork::NETFORK__3_TACHYON)) {
-                return error("Unable to get NTP1 transaction written in ConnectBlock(). An unknown "
+                return error("Unable to get BFXT transaction written in ConnectBlock(). An unknown "
                              "exception was "
                              "thrown");
             }
