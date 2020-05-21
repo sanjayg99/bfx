@@ -1,6 +1,6 @@
 # BFX Specs
 * Algorithm - Scrypt PoS
-* Premine - 120 million
+* Premine - 150 million
 * Decimals - 8
 * Blocktime - 60 seconds
 * Staking - Min to Max (2-23 days)
