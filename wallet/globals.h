@@ -25,7 +25,7 @@ extern CBlockIndexSmartPtr pindexGenesisBlock;
 extern bool               fUseFastIndex;
 extern boost::atomic<int> nBestHeight;
 
-static const int LAST_POW_BLOCK = 500; // 500 PoW Blocks to kickstart
+static const int LAST_POW_BLOCK = 1000; // 1000 PoW Blocks to kickstart
 
 static const int64_t COIN = 100000000;
 static const int64_t CENT = 1000000;
